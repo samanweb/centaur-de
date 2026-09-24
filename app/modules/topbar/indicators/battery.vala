@@ -5,7 +5,13 @@ namespace Centaur.Topbar {
         public abstract double percentage { get; }
         public abstract uint32 state { get; }
         public abstract bool is_present { get; }
-        public abstract uint32 type { get; }
+
+        // `type` would generate centaur_topbar_upower_device_get_type(), which
+        // collides with the GType function of the same name, so the Vala name
+        // differs from the D-Bus one.
+        [DBus (name = "Type")]
+        public abstract uint32 device_type { get; }
+
         public abstract int64 time_to_empty { get; }
     }
 

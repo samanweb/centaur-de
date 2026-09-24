@@ -9,7 +9,12 @@ namespace Centaur.Topbar {
     [DBus (name = "org.freedesktop.NetworkManager.Connection.Active")]
     private interface ActiveConnection : Object {
         public abstract string id { owned get; }
-        public abstract string type { owned get; }
+
+        // `type` would generate centaur_topbar_active_connection_get_type(),
+        // which collides with the GType function of the same name, so the Vala
+        // name differs from the D-Bus one.
+        [DBus (name = "Type")]
+        public abstract string connection_type { owned get; }
     }
 
     /**
@@ -78,7 +83,7 @@ namespace Centaur.Topbar {
                 var active = yield Bus.get_proxy<ActiveConnection> (
                     BusType.SYSTEM, "org.freedesktop.NetworkManager", path);
                 label = active.id;
-                tooltip_text = @"$(active.id) ($(active.type))";
+                tooltip_text = @"$(active.id) ($(active.connection_type))";
             } catch (GLib.Error e) {
                 label = "connected";
                 tooltip_text = null;
