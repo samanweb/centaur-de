@@ -1,0 +1,28 @@
+post_install() {
+  cat <<'MSG'
+
+Centaur DE is installed.
+
+  1. Enable the privileged service:
+       systemctl enable --now centaur-sysd.service
+
+  2. Log out and pick "Centaur" in your display manager.
+
+  Settings live in Base Center (centaur-base-center).
+
+  Known gap in 0.1.0: the topbar's workspace pager and focused-window
+  indicator need a compositor that reports them. labwc does not yet, so
+  those two indicators are absent under labwc and present under sway.
+
+MSG
+}
+
+post_upgrade() {
+  systemctl daemon-reload >/dev/null 2>&1 || true
+  echo "Restart centaur-sysd to pick up this version:"
+  echo "  systemctl restart centaur-sysd.service"
+}
+
+pre_remove() {
+  systemctl disable --now centaur-sysd.service >/dev/null 2>&1 || true
+}

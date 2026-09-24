@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+
+  <enum id="org.centaur.ColourMode">
+    <value nick="auto"      value="0"/>
+    <value nick="dark"      value="1"/>
+    <value nick="pure-dark" value="2"/>
+    <value nick="light"     value="3"/>
+  </enum>
+
+  <enum id="org.centaur.WindowPlacement">
+    <value nick="cursor"   value="0"/>
+    <value nick="center"   value="1"/>
+    <value nick="cascade"  value="2"/>
+    <value nick="automatic" value="3"/>
+  </enum>
+
+  <enum id="org.centaur.TitlebarSide">
+    <value nick="right" value="0"/>
+    <value nick="left"  value="1"/>
+  </enum>
+
+  <schema id="org.centaur.appearance" path="/org/centaur/appearance/">
+    <key name="colour-mode" enum="org.centaur.ColourMode">
+      <default>'dark'</default>
+      <summary>Colour mode</summary>
+      <description>
+        Which palette to use. 'auto' switches between dark and light on the
+        sunrise/sunset schedule and is resolved by centaur-settingsd.
+      </description>
+    </key>
+    <key name="accent" type="s">
+      <default>'emerald'</default>
+      <summary>Accent colour name</summary>
+      <description>
+        One of the accent ramps in the design system. Must match a key in
+        accent-map.json; an unknown value falls back to the default accent.
+      </description>
+    </key>
+    <key name="auto-sunrise" type="s">
+      <default>'07:00'</default>
+      <summary>Time at which 'auto' switches to the light palette</summary>
+    </key>
+    <key name="auto-sunset" type="s">
+      <default>'19:00'</default>
+      <summary>Time at which 'auto' switches to the dark palette</summary>
+    </key>
+    <key name="wallpaper" type="s">
+      <default>''</default>
+      <summary>Absolute path to the wallpaper image</summary>
+    </key>
+    <key name="font-ui" type="s">
+      <default>'Inter 10'</default>
+      <summary>Interface font, as a Pango font description</summary>
+    </key>
+    <key name="font-mono" type="s">
+      <default>'JetBrains Mono 10'</default>
+      <summary>Monospace font, as a Pango font description</summary>
+    </key>
+    <key name="icon-theme" type="s">
+      <default>'Papirus-Dark'</default>
+      <summary>Icon theme name</summary>
+    </key>
+    <key name="cursor-theme" type="s">
+      <default>'Adwaita'</default>
+      <summary>Cursor theme name</summary>
+    </key>
+    <key name="cursor-size" type="i">
+      <range min="16" max="96"/>
+      <default>24</default>
+      <summary>Cursor size in pixels</summary>
+    </key>
+  </schema>
+
+  <schema id="org.centaur.topbar" path="/org/centaur/topbar/">
+    <key name="layout-start" type="as">
+      <default>['launcher','workspaces']</default>
+      <summary>Indicator ids in the start section, in order</summary>
+    </key>
+    <key name="layout-center" type="as">
+      <default>['focused-window']</default>
+      <summary>Indicator ids in the centre section, in order</summary>
+    </key>
+    <key name="layout-end" type="as">
+      <default>['network','volume','battery','clock','power']</default>
+      <summary>Indicator ids in the end section, in order</summary>
+    </key>
+    <key name="all-outputs" type="b">
+      <default>true</default>
+      <summary>Show a bar on every monitor rather than only the first</summary>
+    </key>
+    <key name="clock-format" type="s">
+      <default>'%a, %b %-d  %H:%M'</default>
+      <summary>strftime format for the clock indicator</summary>
+    </key>
+  </schema>
+
+  <schema id="org.centaur.compositor" path="/org/centaur/compositor/">
+    <key name="window-placement" enum="org.centaur.WindowPlacement">
+      <default>'cursor'</default>
+      <summary>Where new windows are placed</summary>
+    </key>
+    <key name="titlebar-side" enum="org.centaur.TitlebarSide">
+      <default>'right'</default>
+      <summary>Which side the titlebar buttons sit on</summary>
+    </key>
+    <key name="titlebar-buttons" type="as">
+      <default>['minimise','maximise','close']</default>
+      <summary>Which titlebar buttons are shown, in order</summary>
+    </key>
+    <key name="animation-duration" type="i">
+      <range min="0" max="1000"/>
+      <default>200</default>
+      <summary>Window transition duration in milliseconds; 0 disables</summary>
+    </key>
+  </schema>
+
+</schemalist>

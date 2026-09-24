@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Centaur
+Comment=Lightweight Wayland desktop environment
+Exec=/usr/bin/centaur-session
+TryExec=/usr/bin/centaur-session
+Type=Application
+# DesktopNames is what display managers read to set XDG_CURRENT_DESKTOP.
+# It is part of the display-manager convention for wayland-sessions, not the
+# desktop-entry spec, so desktop-file-validate rejects it. That is a gap in the
+# validator, not in this file -- GDM, SDDM and LightDM all require it.
+DesktopNames=Centaur

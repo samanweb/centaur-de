@@ -1,0 +1,3 @@
+The purpose of project is to create a lightweight desktop environment that can use in Debian, Fedora, Open SUSE and Arch distributions with Wayland display server. 
+The propose Desktop environment should be able to support coding, image editing, Audio and Video, Office Documents and Web browsing using very low resource usage.       
+Use C as main language for this development while using GTK4 + Vala  framework.

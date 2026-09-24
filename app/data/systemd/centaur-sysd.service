@@ -1,0 +1,32 @@
+[Unit]
+Description=Centaur DE privileged system service
+Documentation=file:///usr/share/doc/centaur/architecture.md
+After=dbus.service polkit.service
+Requires=dbus.service
+
+[Service]
+Type=dbus
+BusName=org.centaur.System1
+ExecStart=/usr/libexec/centaur-sysd
+Restart=on-failure
+RestartSec=2
+
+# Hardening. centaur-sysd links no UI and needs very little of the system.
+# It does need to execute the distro's package manager, so ProtectSystem is
+# deliberately not set to strict.
+NoNewPrivileges=yes
+ProtectHome=read-only
+PrivateTmp=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_NETLINK AF_INET AF_INET6
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

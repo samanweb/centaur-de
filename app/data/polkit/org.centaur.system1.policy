@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+
+  <vendor>Centaur DE</vendor>
+
+  <!-- Reads are allowed without a prompt: they expose nothing a local user
+       cannot already read, and prompting for them would train users to click
+       through prompts. Mutations require admin authentication. -->
+
+  <action id="org.centaur.system1.host.read">
+    <description>Read hardware and storage information</description>
+    <message>Authentication is required to read system hardware information</message>
+    <defaults>
+      <allow_any>yes</allow_any>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.centaur.system1.packages.read">
+    <description>Check for available package updates</description>
+    <message>Authentication is required to check for updates</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.centaur.system1.packages.update">
+    <description>Install package updates</description>
+    <message>Authentication is required to install package updates</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.centaur.system1.security.read">
+    <description>Read disk encryption and boot security status</description>
+    <message>Authentication is required to read the security status</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.centaur.system1.jobs.cancel">
+    <description>Cancel a running system job</description>
+    <message>Authentication is required to cancel a system job</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+</policyconfig>

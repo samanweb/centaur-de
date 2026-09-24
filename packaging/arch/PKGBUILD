@@ -1,0 +1,91 @@
+# Maintainer: Centaur DE
+#
+# Builds from the checked-out tree rather than a release tarball, so run this
+# from inside packaging/arch of a Centaur checkout:
+#
+#     cd packaging/arch && makepkg -si
+#
+# Nothing is downloaded; the sources are the working tree two levels up.
+
+pkgname=centaur-de
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Lightweight Wayland desktop environment: topbar, Base Center and session'
+arch=('x86_64' 'aarch64')
+url='https://example.invalid/centaur'
+license=('GPL-3.0-or-later')
+
+depends=(
+  'gtk4'
+  'gtk4-layer-shell'
+  'glib2'
+  'json-glib'
+  'cairo'
+  'pango'
+  'polkit'
+  'util-linux'          # lsblk, for the Overview and Security pages
+  'labwc'               # the reference compositor; see optdepends for sway
+  'pacman-contrib'      # checkupdates; without it update checks cannot refresh
+)
+
+makedepends=(
+  'meson'
+  'ninja'
+  'vala'
+  'python'              # design-system generator, run as a meson test
+)
+
+optdepends=(
+  'sway: workspace pager and focused-window indicator in the topbar'
+  'networkmanager: network indicator'
+  'upower: battery indicator'
+  'libpulse: volume indicator (pactl)'
+  'pipewire-pulse: volume indicator on a PipeWire system'
+  'libnotify: notification when a supervised module stops'
+  'papirus-icon-theme: the default icon theme'
+  'ttf-jetbrains-mono: the default monospace font'
+  'inter-font: the default interface font'
+)
+
+provides=('centaur-de')
+conflicts=('centaur-de-git')
+install='centaur-de.install'
+
+# The working tree is the source. makepkg copies nothing, so a dirty tree
+# builds a dirty package -- deliberate for a local build, not for a repo.
+source=()
+sha256sums=()
+
+_projectroot() {
+  realpath "${startdir}/../.."
+}
+
+build() {
+  local root
+  root="$(_projectroot)"
+
+  arch-meson "${root}/app" "${srcdir}/build"
+  meson compile -C "${srcdir}/build"
+}
+
+check() {
+  # Runs the design system's own gates: stale generated CSS and any contrast
+  # regression fail the build rather than shipping.
+  meson test -C "${srcdir}/build" --print-errorlogs
+}
+
+package() {
+  local root
+  root="$(_projectroot)"
+
+  meson install -C "${srcdir}/build" --destdir "${pkgdir}"
+
+  install -Dm644 "${root}/architecture.md" \
+    "${pkgdir}/usr/share/doc/${pkgname}/architecture.md"
+  install -Dm644 "${root}/module-list.md" \
+    "${pkgdir}/usr/share/doc/${pkgname}/module-list.md"
+  install -Dm644 "${root}/design-system/README.md" \
+    "${pkgdir}/usr/share/doc/${pkgname}/design-system.md"
+  install -Dm644 "${root}/design-system/components.md" \
+    "${pkgdir}/usr/share/doc/${pkgname}/components.md"
+}

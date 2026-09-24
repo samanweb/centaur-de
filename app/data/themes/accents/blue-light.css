@@ -1,0 +1,5 @@
+/* accent: blue on light */
+@define-color centaur_accent_base #1d4ed8;
+@define-color centaur_accent_bright #2563eb;
+@define-color centaur_accent_dim #1e40af;
+@define-color centaur_accent_ink #ffffff;

@@ -1,0 +1,15 @@
+centaur_sysd = executable('centaur-sysd',
+  files(
+    'polkit.vala',
+    'backends/package-backend.vala',
+    'job.vala',
+    'packages.vala',
+    'host.vala',
+    'security.vala',
+    'main.vala',
+  ),
+  dependencies: [libcentaur_dep],
+  vala_args: ['--pkg', 'posix'],
+  install: true,
+  install_dir: libexecdir,
+)

@@ -1,0 +1,4 @@
+option('topbar',      type: 'boolean', value: true,
+       description: 'Build centaur-topbar (requires gtk4-layer-shell)')
+option('base-center', type: 'boolean', value: true,
+       description: 'Build centaur-base-center')

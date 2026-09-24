@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Base Center
+GenericName=Settings
+Comment=Configure your Centaur desktop and system
+Exec=centaur-base-center
+Icon=preferences-system
+Terminal=false
+Type=Application
+Categories=Settings;DesktopSettings;GTK;
+Keywords=settings;preferences;configuration;system;display;network;
+StartupNotify=true
+X-GNOME-SingleWindow=true

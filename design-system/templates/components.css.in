@@ -1,0 +1,313 @@
+
+/* ===========================================================================
+   Centaur DE — component rules
+   ---------------------------------------------------------------------------
+   Colours are @define-color references so centaur-settingsd can swap the accent
+   block at runtime. Lengths are substituted from tokens.json at build time,
+   because GTK4 CSS has no variable mechanism for lengths.
+
+   Load order matters and is fixed:
+       accents/<accent>-<palette>.css     (accent block, first)
+       tokens-<palette>.css               (palette block)
+       components.css                     (these rules)
+   =========================================================================== */
+
+/* --- base ---------------------------------------------------------------- */
+
+window,
+.centaur-window {
+  background-color: @centaur_surface_window;
+  color: @centaur_text_primary;
+  font-family: {{font.family-ui}};
+  font-size: {{font.size-body}};
+}
+
+label { color: @centaur_text_primary; }
+label.dim  { color: @centaur_text_secondary; }
+label.muted { color: @centaur_text_muted; }
+label.mono { font-family: {{font.family-mono}}; }
+
+.title-lg {
+  font-size: {{font.size-title-lg}};
+  font-weight: {{font.weight-semibold}};
+}
+.title {
+  font-size: {{font.size-title}};
+  font-weight: {{font.weight-semibold}};
+}
+.caption {
+  font-size: {{font.size-caption}};
+  color: @centaur_text_muted;
+}
+.section-heading {
+  font-size: {{font.size-caption}};
+  font-weight: {{font.weight-semibold}};
+  color: @centaur_text_muted;
+  letter-spacing: 0.06em;
+}
+
+*:disabled,
+.centaur-unavailable {
+  color: @centaur_text_disabled;
+}
+
+/* Focus is one ring everywhere. Never remove it without replacing it. */
+*:focus-visible {
+  outline: {{layout.focus-ring-width}} solid @centaur_accent_base;
+  outline-offset: {{space.xs}};
+}
+
+/* --- topbar (module 01) --------------------------------------------------- */
+
+.centaur-topbar {
+  background-color: @centaur_surface_topbar;
+  border-bottom: {{border-width.hairline}} solid @centaur_border_subtle;
+  min-height: {{layout.topbar-height}};
+  font-size: {{font.size-small}};
+}
+
+.centaur-indicator {
+  padding: 0 {{space.md}};
+  border-radius: {{radius.sm}};
+  color: @centaur_text_secondary;
+  transition: background-color {{motion.duration-fast}} {{motion.easing-standard}};
+}
+.centaur-indicator:hover  { background-color: @centaur_surface_card_hover; }
+.centaur-indicator:active,
+.centaur-indicator.active { color: @centaur_text_primary; }
+
+.centaur-workspace {
+  min-width: {{layout.icon-lg}};
+  padding: 0 {{space.sm}};
+  margin: 0 {{space.xs}};
+  border-radius: {{radius.sm}};
+  color: @centaur_text_muted;
+}
+.centaur-workspace.occupied { color: @centaur_text_secondary; }
+.centaur-workspace.active {
+  background-color: @centaur_accent_bg;
+  color: @centaur_accent_base;
+  font-weight: {{font.weight-medium}};
+}
+
+.centaur-focused-window {
+  color: @centaur_text_secondary;
+  font-family: {{font.family-mono}};
+  font-size: {{font.size-small}};
+}
+
+.centaur-badge {
+  background-color: @centaur_accent_base;
+  color: @centaur_accent_ink;
+  border-radius: {{radius.pill}};
+  font-size: {{font.size-caption}};
+  font-weight: {{font.weight-semibold}};
+  padding: 0 {{space.sm}};
+  min-width: {{layout.icon-sm}};
+}
+
+/* --- base center shell (module 02) ---------------------------------------- */
+
+.centaur-sidebar {
+  background-color: @centaur_surface_sidebar;
+  border-right: {{border-width.hairline}} solid @centaur_border_subtle;
+  min-width: {{layout.sidebar-width}};
+  padding: {{space.md}};
+}
+
+.centaur-sidebar-row {
+  min-height: {{layout.row-height-compact}};
+  padding: 0 {{space.lg}};
+  border-radius: {{radius.md}};
+  color: @centaur_text_secondary;
+  transition: background-color {{motion.duration-fast}} {{motion.easing-standard}};
+}
+.centaur-sidebar-row:hover { background-color: @centaur_surface_card_hover; }
+.centaur-sidebar-row:selected {
+  background-color: @centaur_accent_bg;
+  color: @centaur_accent_base;
+  font-weight: {{font.weight-medium}};
+}
+
+.centaur-search entry,
+entry.centaur-search {
+  background-color: @centaur_surface_card;
+  border: {{border-width.hairline}} solid @centaur_border_default;
+  border-radius: {{radius.md}};
+  padding: {{space.md}} {{space.lg}};
+  color: @centaur_text_primary;
+}
+entry.centaur-search:focus { border-color: @centaur_accent_base; }
+
+.centaur-content {
+  background-color: @centaur_surface_window;
+  padding: {{space.2xl}};
+}
+
+/* --- card ----------------------------------------------------------------- */
+
+.centaur-card {
+  background-color: @centaur_surface_card;
+  border: {{border-width.hairline}} solid @centaur_border_subtle;
+  border-radius: {{radius.lg}};
+  padding: {{layout.card-padding}};
+}
+.centaur-card:hover { background-color: @centaur_surface_card_hover; }
+
+.centaur-card-header {
+  font-size: {{font.size-body-lg}};
+  font-weight: {{font.weight-semibold}};
+  margin-bottom: {{space.lg}};
+}
+
+.centaur-card.accent { border-color: @centaur_accent_dim; }
+.centaur-card.danger { border-color: @centaur_status_danger; }
+
+/* --- rows ----------------------------------------------------------------- */
+
+.centaur-row {
+  min-height: {{layout.row-height}};
+  padding: {{space.md}} 0;
+}
+.centaur-row + .centaur-row {
+  border-top: {{border-width.hairline}} solid @centaur_border_subtle;
+}
+.centaur-row-title    { font-weight: {{font.weight-medium}}; }
+.centaur-row-subtitle {
+  font-size: {{font.size-small}};
+  color: @centaur_text_muted;
+}
+
+/* --- controls ------------------------------------------------------------- */
+
+switch {
+  background-color: @centaur_control_track;
+  border: none;
+  border-radius: {{radius.pill}};
+  transition: background-color {{motion.duration-base}} {{motion.easing-standard}};
+}
+switch:checked  { background-color: @centaur_accent_base; }
+switch:disabled { background-color: @centaur_control_track_disabled; }
+switch slider {
+  background-color: @centaur_control_thumb;
+  border-radius: {{radius.pill}};
+}
+
+scale trough {
+  background-color: @centaur_control_track;
+  border-radius: {{radius.pill}};
+  min-height: {{space.sm}};
+}
+scale highlight {
+  background-color: @centaur_accent_base;
+  border-radius: {{radius.pill}};
+}
+scale slider {
+  background-color: @centaur_control_thumb;
+  border-radius: {{radius.pill}};
+  min-width: {{layout.icon-sm}};
+  min-height: {{layout.icon-sm}};
+}
+
+button {
+  background-color: @centaur_control_fill;
+  color: @centaur_text_primary;
+  border: {{border-width.hairline}} solid @centaur_border_default;
+  border-radius: {{radius.md}};
+  padding: {{space.md}} {{space.lg}};
+  font-weight: {{font.weight-medium}};
+  transition: background-color {{motion.duration-fast}} {{motion.easing-standard}};
+}
+button:hover    { background-color: @centaur_surface_raised; }
+button:disabled { color: @centaur_text_disabled; }
+
+button.accent {
+  background-color: @centaur_accent_base;
+  color: @centaur_accent_ink;
+  border-color: @centaur_accent_base;
+}
+button.accent:hover { background-color: @centaur_accent_bright; }
+
+button.danger {
+  background-color: @centaur_status_danger_bg;
+  color: @centaur_status_danger;
+  border-color: @centaur_status_danger;
+}
+
+button.flat {
+  background-color: transparent;
+  border-color: transparent;
+  color: @centaur_text_secondary;
+}
+button.flat:hover { background-color: @centaur_surface_card_hover; }
+
+button.pill { border-radius: {{radius.pill}}; }
+
+/* --- data display --------------------------------------------------------- */
+
+.centaur-stat-tile {
+  background-color: @centaur_surface_raised;
+  border-radius: {{radius.md}};
+  padding: {{space.lg}};
+}
+.centaur-stat-value {
+  font-size: {{font.size-display}};
+  font-weight: {{font.weight-semibold}};
+  font-family: {{font.family-mono}};
+}
+.centaur-stat-label {
+  font-size: {{font.size-caption}};
+  color: @centaur_text_muted;
+}
+
+/* MeterRing draws its arc in code and reads this one `color` property.
+   The unfilled track is that same colour at 18% alpha, derived in the widget:
+   a ring is a single drawing area, so a second CSS class could not reach it. */
+.centaur-meter-ring         { color: @centaur_accent_base; }
+.centaur-meter-ring.warning { color: @centaur_status_warning; }
+.centaur-meter-ring.danger  { color: @centaur_status_danger; }
+
+progressbar trough {
+  background-color: @centaur_control_track;
+  border-radius: {{radius.pill}};
+}
+progressbar progress {
+  background-color: @centaur_accent_base;
+  border-radius: {{radius.pill}};
+}
+
+/* --- status chips --------------------------------------------------------- */
+
+.centaur-chip {
+  border-radius: {{radius.pill}};
+  padding: {{space.xs}} {{space.md}};
+  font-size: {{font.size-caption}};
+  font-weight: {{font.weight-medium}};
+}
+.centaur-chip.success { background-color: @centaur_status_success_bg; color: @centaur_status_success; }
+.centaur-chip.warning { background-color: @centaur_status_warning_bg; color: @centaur_status_warning; }
+.centaur-chip.danger  { background-color: @centaur_status_danger_bg;  color: @centaur_status_danger;  }
+.centaur-chip.info    { background-color: @centaur_status_info_bg;    color: @centaur_status_info;    }
+.centaur-chip.accent  { background-color: @centaur_accent_bg;         color: @centaur_accent_base;    }
+
+/* --- surfaces ------------------------------------------------------------- */
+
+popover > contents {
+  background-color: @centaur_surface_overlay;
+  border: {{border-width.hairline}} solid @centaur_border_default;
+  border-radius: {{radius.lg}};
+  padding: {{space.md}};
+}
+
+tooltip {
+  background-color: @centaur_surface_overlay;
+  border-radius: {{radius.sm}};
+  color: @centaur_text_primary;
+  font-size: {{font.size-small}};
+}
+
+separator {
+  background-color: @centaur_border_subtle;
+  min-width: {{border-width.hairline}};
+  min-height: {{border-width.hairline}};
+}
