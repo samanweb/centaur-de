@@ -35,7 +35,7 @@ gobject_dep = dependency('gobject-2.0')
 gio_dep     = dependency('gio-2.0')
 giounix_dep = dependency('gio-unix-2.0')
 json_dep    = dependency('json-glib-1.0')
-gtk_dep     = dependency('gtk4',        version: '>= 4.10')
+gtk_dep     = dependency('gtk4',        version: '>= 4.12')  # load_from_string
 layershell_dep = dependency('gtk4-layer-shell-0', required: get_option('topbar'))
 cairo_dep   = dependency('cairo')
 math_dep    = meson.get_compiler('c').find_library('m', required: false)

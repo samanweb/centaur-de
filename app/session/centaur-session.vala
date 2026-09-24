@@ -12,8 +12,11 @@ namespace Centaur.Session {
         private const int MAX_RESTARTS = 3;
         private const int WINDOW_SECONDS = 60;
 
-        public string name { get; construct; }
-        public string[] argv { get; construct; }
+        // Plain fields, not construct properties: a string[] as a GObject
+        // property has to be marshalled through a boxed type, which Vala
+        // supports but has no reason to do for a private helper class.
+        public string name;
+        private string[] argv;
 
         private Subprocess? process = null;
         private int restarts = 0;
@@ -21,7 +24,8 @@ namespace Centaur.Session {
         private bool stopping = false;
 
         public Child (string name, string[] argv) {
-            Object (name: name, argv: argv);
+            this.name = name;
+            this.argv = argv;
         }
 
         public void start () {

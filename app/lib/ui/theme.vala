@@ -36,6 +36,11 @@ namespace Centaur.Ui {
                 return;
             }
 
+            // valac warns that Gtk.StyleContext is deprecated. The class is;
+            // this function is not -- gtk_style_context_add_provider_for_display
+            // is GDK_AVAILABLE_IN_ALL in gtkstyleprovider.h, and GTK ships no
+            // replacement. The warning is an artefact of the Vala binding
+            // hanging the function off the deprecated class.
             Gtk.StyleContext.add_provider_for_display (
                 display, this.provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
@@ -112,7 +117,7 @@ namespace Centaur.Ui {
                 return;
             }
 
-            provider.load_from_data (css.data);
+            provider.load_from_string (css);
             Core.Log.debug ("loaded palette=%s accent=%s", palette, accent);
         }
 

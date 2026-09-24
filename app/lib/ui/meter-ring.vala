@@ -15,7 +15,16 @@ namespace Centaur.Ui {
 
         private const double STROKE = 6.0;
         private const double TRACK_ALPHA = 0.18;
-        private const int DEFAULT_SIZE = 96;
+
+        /**
+         * The default diameter, in pixels.
+         *
+         * Public because it is the default value of a public constructor, and
+         * Vala requires a default to be at least as accessible as the method
+         * that uses it. It is part of the contract either way: a caller laying
+         * out a row of gauges needs to know what size it will get.
+         */
+        public const int DEFAULT_SIZE = 96;
 
         private const double WARNING_AT = 0.80;
         private const double DANGER_AT = 0.95;
