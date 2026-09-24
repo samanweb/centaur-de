@@ -1,4 +1,8 @@
+# Core only. No compositor, and above all no ui: this process runs as root and
+# must never map GTK, Pango or a font cache.
 centaur_sysd = executable('centaur-sysd',
+  centaur_core_sources,
+  version_vala,
   files(
     'polkit.vala',
     'backends/package-backend.vala',
@@ -8,7 +12,7 @@ centaur_sysd = executable('centaur-sysd',
     'security.vala',
     'main.vala',
   ),
-  dependencies: [libcentaur_dep],
+  dependencies: base_deps,
   vala_args: ['--pkg', 'posix'],
   install: true,
   install_dir: libexecdir,

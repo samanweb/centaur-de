@@ -1,12 +1,14 @@
-# Links libcentaur, which links GTK. settingsd opens no window and needs no
-# display -- see README.md "Deviations from architecture.md" for why the
-# single-archive decision costs it a GTK link it does not use.
+# Core and compositor. Genuinely headless -- it opens no window and, unlike the
+# earlier single-archive build, no longer links GTK at all.
 centaur_settingsd = executable('centaur-settingsd',
+  centaur_core_sources,
+  centaur_compositor_sources,
+  version_vala,
   files(
     'applier.vala',
     'main.vala',
   ),
-  dependencies: [libcentaur_dep],
+  dependencies: base_deps,
   vala_args: ['--pkg', 'posix'],
   install: true,
   install_dir: libexecdir,

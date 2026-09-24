@@ -117,18 +117,28 @@ because this build uses no libadwaita and so has no `AdwClamp`.
 
 Each of these was a deliberate trade, and each is reversible.
 
-**One static archive instead of three libraries.** `architecture.md` names
-`libcentaur-core`, `libcentaur-ui` and `libcentaur-compositor`. They exist as
-three namespaces inside one `static_library`. Meson's Vala support is at its
-most fragile around inter-library VAPI dependencies, and this code could not be
-compile-tested; one archive removes that failure mode entirely. The namespaces
-are already separate, so splitting them later is a build-file change, not a
-refactor.
+**Source sets compiled per target, instead of three libraries.**
+`architecture.md` names `libcentaur-core`, `libcentaur-ui` and
+`libcentaur-compositor`. They exist as three namespaces and three source sets in
+`lib/meson.build`, compiled into each executable rather than built as libraries.
 
-*Cost:* `centaur-settingsd` links GTK although it opens no window.
-`architecture.md` §4.3 calls it headless, and it still is in behaviour — it
-needs no display and is testable without a compositor — but it carries a GTK
-link it does not use. Splitting the archive removes this.
+This started as one static archive and did not survive contact with a compiler.
+Vala generates a single public header for a library, so `centaur.h` carried
+every public type — including `Ui.Chip` and its `GtkLabel parent_instance` —
+and `core/log.c`, which uses no GTK and therefore includes no `gtk/gtk.h`,
+included that header anyway. `GtkLabel` was an incomplete type and the C compile
+failed. Source sets give each `.c` file exactly the declarations and includes it
+needs, with no shared header to get this wrong.
+
+*This is now closer to the architecture than the archive was.* Because
+`centaur-sysd` and `centaur-settingsd` never compile the `ui` sources, they link
+no GTK at all — the property `architecture.md` §2.3 asks for, which the archive
+had quietly cost. Only `centaur-topbar` and `centaur-base-center` depend on GTK.
+
+*Cost:* the shared sources are compiled once per target. They are small, and a
+root process that does not link a UI toolkit is worth more than the build
+seconds. Turning the three source sets into three real libraries remains
+possible; it is a build-file change, not a refactor.
 
 **D-Bus interfaces are defined in Vala, not in XML.** `architecture.md` §6.2
 says client and server are generated from XML in `data/dbus/`. In a Vala project

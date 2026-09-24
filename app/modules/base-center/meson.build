@@ -1,4 +1,8 @@
 centaur_base_center = executable('centaur-base-center',
+  centaur_core_sources,
+  centaur_compositor_sources,
+  centaur_ui_sources,
+  version_vala,
   files(
     'page.vala',
     'pages/overview.vala',
@@ -7,7 +11,7 @@ centaur_base_center = executable('centaur-base-center',
     'window.vala',
     'main.vala',
   ),
-  dependencies: [libcentaur_dep],
+  dependencies: ui_deps,
   install: true,
   install_dir: bindir,
 )

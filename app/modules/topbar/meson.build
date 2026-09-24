@@ -1,4 +1,8 @@
 centaur_topbar = executable('centaur-topbar',
+  centaur_core_sources,
+  centaur_compositor_sources,
+  centaur_ui_sources,
+  version_vala,
   files(
     'indicator.vala',
     'indicators/clock.vala',
@@ -12,7 +16,7 @@ centaur_topbar = executable('centaur-topbar',
     'bar.vala',
     'main.vala',
   ),
-  dependencies: [libcentaur_dep, layershell_dep],
+  dependencies: ui_deps + [layershell_dep],
   install: true,
   install_dir: bindir,
 )
