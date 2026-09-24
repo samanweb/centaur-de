@@ -29,6 +29,28 @@ namespace Centaur.Topbar {
         public abstract string indicator_id { owned get; }
     }
 
+    /**
+     * Base for an indicator that is a single piece of text.
+     *
+     * GtkLabel is final in GTK4, so a text indicator wraps a label instead of
+     * being one. `label` forwards to that caption, and the css classes stay on
+     * the indicator itself, where font and colour inherit down to the caption.
+     */
+    public abstract class TextIndicator : Gtk.Box {
+
+        protected Gtk.Label caption;
+
+        public string label {
+            get { return caption.label; }
+            set { caption.label = value; }
+        }
+
+        construct {
+            caption = new Gtk.Label ("");
+            append (caption);
+        }
+    }
+
     namespace Indicators {
 
         /**

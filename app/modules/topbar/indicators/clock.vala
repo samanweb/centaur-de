@@ -7,7 +7,7 @@ namespace Centaur.Topbar {
      * rather than every second: a bar that ticks at 1 Hz keeps the CPU out of
      * its idle states all session for a display that changes once a minute.
      */
-    public class ClockIndicator : Gtk.Label, Indicator {
+    public class ClockIndicator : TextIndicator, Indicator {
 
         private Context context;
         private uint tick_source = 0;

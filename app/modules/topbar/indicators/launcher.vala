@@ -11,8 +11,9 @@ namespace Centaur.Topbar {
      * resident all session and must not carry a parsed copy of every .desktop
      * file on the machine for a popover nobody has opened.
      */
-    public class LauncherIndicator : Gtk.MenuButton, Indicator {
+    public class LauncherIndicator : Gtk.Box, Indicator {
 
+        private Gtk.MenuButton button;
         private Gtk.SearchEntry search;
         private Gtk.ListBox results;
         private Gtk.Popover menu;
@@ -22,10 +23,17 @@ namespace Centaur.Topbar {
         public string indicator_id { owned get { return "launcher"; } }
 
         public LauncherIndicator () {
-            add_css_class ("centaur-indicator");
-            add_css_class ("flat");
-            label = "START";
-            tooltip_text = "Applications";
+            Object (orientation: Gtk.Orientation.HORIZONTAL, spacing: 0);
+
+            // GtkMenuButton is final in GTK4, so the indicator holds one
+            // rather than being one.
+            button = new Gtk.MenuButton () {
+                label = "START",
+                tooltip_text = "Applications",
+            };
+            button.add_css_class ("centaur-indicator");
+            button.add_css_class ("flat");
+            append (button);
 
             search = new Gtk.SearchEntry () {
                 placeholder_text = "Search applications",
@@ -48,7 +56,7 @@ namespace Centaur.Topbar {
             box.append (scroller);
 
             menu = new Gtk.Popover () { child = box };
-            this.popover = menu;
+            button.popover = menu;
 
             search.search_changed.connect (() => filter (search.text));
             results.row_activated.connect (row => launch_row (row));

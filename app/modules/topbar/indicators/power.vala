@@ -7,15 +7,24 @@ namespace Centaur.Topbar {
      * setuid helper: logind already owns these decisions and already asks
      * polkit, so Centaur has no business reimplementing the policy.
      */
-    public class PowerIndicator : Gtk.MenuButton, Indicator {
+    public class PowerIndicator : Gtk.Box, Indicator {
+
+        private Gtk.MenuButton button;
 
         public string indicator_id { owned get { return "power"; } }
 
         public PowerIndicator () {
-            add_css_class ("centaur-indicator");
-            add_css_class ("flat");
-            icon_name = "system-shutdown-symbolic";
-            tooltip_text = "Session";
+            Object (orientation: Gtk.Orientation.HORIZONTAL, spacing: 0);
+
+            // GtkMenuButton is final in GTK4, so the indicator holds one
+            // rather than being one.
+            button = new Gtk.MenuButton () {
+                icon_name = "system-shutdown-symbolic",
+                tooltip_text = "Session",
+            };
+            button.add_css_class ("centaur-indicator");
+            button.add_css_class ("flat");
+            append (button);
 
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
             box.append (action_button ("Lock", { "loginctl", "lock-session" }));
@@ -31,7 +40,7 @@ namespace Centaur.Topbar {
 
             var popover = new Gtk.Popover ();
             popover.set_child (box);
-            this.popover = popover;
+            button.popover = popover;
         }
 
         private Gtk.Button action_button (string label, string[] argv) {
@@ -40,8 +49,8 @@ namespace Centaur.Topbar {
             button.halign = Gtk.Align.FILL;
 
             button.clicked.connect (() => {
-                if (this.popover != null) {
-                    this.popover.popdown ();
+                if (this.button.popover != null) {
+                    this.button.popover.popdown ();
                 }
                 run (argv);
             });

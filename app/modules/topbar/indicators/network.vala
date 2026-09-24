@@ -19,7 +19,7 @@ namespace Centaur.Topbar {
      * across VPNs and simultaneous interfaces. Reimplementing that judgement
      * here would only produce a second, worse answer.
      */
-    public class NetworkIndicator : Gtk.Label, Indicator {
+    public class NetworkIndicator : TextIndicator, Indicator {
 
         private const uint32 STATE_CONNECTED_GLOBAL = 70;
         private const uint32 STATE_CONNECTED_SITE = 60;

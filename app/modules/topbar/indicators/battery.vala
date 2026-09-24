@@ -16,7 +16,7 @@ namespace Centaur.Topbar {
      * exist, so a laptop with two batteries and a desktop with none both work
      * without this knowing anything about the hardware.
      */
-    public class BatteryIndicator : Gtk.Label, Indicator {
+    public class BatteryIndicator : TextIndicator, Indicator {
 
         private const uint32 STATE_CHARGING = 1;
         private const uint32 STATE_FULLY_CHARGED = 4;

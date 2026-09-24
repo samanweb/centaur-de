@@ -8,7 +8,7 @@ namespace Centaur.Topbar {
      * long-lived `pactl subscribe` is event-driven rather than polled, so the
      * cost is one extra process and a parse, not a wakeup every second.
      */
-    public class VolumeIndicator : Gtk.Label, Indicator {
+    public class VolumeIndicator : TextIndicator, Indicator {
 
         private Subprocess? monitor = null;
         private bool muted = false;

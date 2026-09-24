@@ -7,7 +7,7 @@ namespace Centaur.Topbar {
      * command line, and it must never be allowed to push the rest of the bar
      * around as the user switches windows.
      */
-    public class FocusedWindowIndicator : Gtk.Label, Indicator {
+    public class FocusedWindowIndicator : TextIndicator, Indicator {
 
         private const int MAX_WIDTH_CHARS = 60;
 
@@ -22,9 +22,9 @@ namespace Centaur.Topbar {
             add_css_class ("centaur-indicator");
             add_css_class ("centaur-focused-window");
 
-            ellipsize = Pango.EllipsizeMode.END;
-            max_width_chars = MAX_WIDTH_CHARS;
-            single_line_mode = true;
+            caption.ellipsize = Pango.EllipsizeMode.END;
+            caption.max_width_chars = MAX_WIDTH_CHARS;
+            caption.single_line_mode = true;
 
             // As in WorkspacesIndicator: the backend outlives this widget.
             map.connect (subscribe);
