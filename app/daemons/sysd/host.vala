@@ -72,13 +72,13 @@ namespace Centaur.Sysd {
                 return devices;
             }
 
-            collect_devices (container.get_array_member ("blockdevices"), ref devices);
-            return devices;
+            return collect_devices (container.get_array_member ("blockdevices"));
         }
 
         /** lsblk nests partitions under their disk; the page wants both. */
-        private void collect_devices (Json.Array nodes,
-                                      ref HashTable<string, Variant>[] devices) {
+        private HashTable<string, Variant>[] collect_devices (Json.Array nodes) {
+            HashTable<string, Variant>[] devices = {};
+
             for (uint i = 0; i < nodes.get_length (); i++) {
                 var element = nodes.get_element (i);
                 if (element.get_node_type () != Json.NodeType.OBJECT) {
@@ -99,9 +99,13 @@ namespace Centaur.Sysd {
                 devices += device;
 
                 if (node.has_member ("children")) {
-                    collect_devices (node.get_array_member ("children"), ref devices);
+                    foreach (var child in collect_devices (node.get_array_member ("children"))) {
+                        devices += child;
+                    }
                 }
             }
+
+            return devices;
         }
 
         private static string json_text (Json.Object node, string member) {
