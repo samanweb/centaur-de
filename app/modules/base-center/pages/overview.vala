@@ -250,7 +250,7 @@ namespace Centaur.BaseCenter {
             if (bytes < 0) {
                 return "—";
             }
-            return format_size_full ((uint64) bytes, FormatSizeFlags.DEFAULT);
+            return GLib.format_size ((uint64) bytes);
         }
     }
 }
