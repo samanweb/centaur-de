@@ -40,8 +40,10 @@ layershell_dep = dependency('gtk4-layer-shell-0', required: get_option('topbar')
 cairo_dep   = dependency('cairo')
 math_dep    = meson.get_compiler('c').find_library('m', required: false)
 
-base_deps = [glib_dep, gobject_dep, gio_dep, giounix_dep, json_dep]
-ui_deps   = base_deps + [gtk_dep, cairo_dep, math_dep]
+# libm is in base_deps rather than only in ui_deps: any target may reach for
+# GLib's Math bindings, and -Wl,--as-needed drops the link for those that do not.
+base_deps = [glib_dep, gobject_dep, gio_dep, giounix_dep, json_dep, math_dep]
+ui_deps   = base_deps + [gtk_dep, cairo_dep]
 
 subdir('lib')
 subdir('daemons/sysd')

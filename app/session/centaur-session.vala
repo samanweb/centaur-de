@@ -81,7 +81,9 @@ namespace Centaur.Session {
                 return;
             }
 
-            var delay = (uint) Math.pow (2, restarts - 1);   // 1s, 2s, 4s
+            // Integer doubling: 1s, 2s, 4s. restarts is capped just above, so
+            // the shift cannot run away.
+            var delay = (uint) (1 << (restarts - 1));
             Core.Log.warn ("%s exited; restarting in %us (attempt %d/%d)",
                            name, delay, restarts, MAX_RESTARTS);
 
