@@ -26,3 +26,14 @@ def ratio(fg: str, bg: str) -> float:
 def best_ink(background: str, *candidates: str) -> str:
     """Pick the candidate with the highest contrast against background."""
     return max(candidates, key=lambda c: ratio(c, background))
+
+
+def mix(fg: str, bg: str, alpha: float) -> str:
+    """fg painted over bg at `alpha`, as an opaque #rrggbb.
+
+    For consumers that want solid colours where GTK would blend -- labwc, for
+    one, draws menu highlights more cheaply and predictably when opaque.
+    """
+    f = [int(fg.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
+    b = [int(bg.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
+    return "#" + "".join(f"{round(fc * alpha + bc * (1 - alpha)):02x}" for fc, bc in zip(f, b))

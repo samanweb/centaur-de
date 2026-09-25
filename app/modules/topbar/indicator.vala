@@ -9,9 +9,12 @@ namespace Centaur.Topbar {
     public class Context : Object {
         public Compositor.Backend compositor { get; construct; }
         public Core.Config config { get; construct; }
+        public Toplevels toplevels { get; construct; }
 
         public Context (Compositor.Backend compositor) {
-            Object (compositor: compositor, config: Core.Config.get_default ());
+            Object (compositor: compositor,
+                    config: Core.Config.get_default (),
+                    toplevels: new Toplevels ());
         }
     }
 
@@ -30,23 +33,42 @@ namespace Centaur.Topbar {
     }
 
     /**
-     * Base for an indicator that is a single piece of text.
+     * Base for an indicator that is a symbolic icon, a piece of text, or both.
      *
      * GtkLabel is final in GTK4, so a text indicator wraps a label instead of
-     * being one. `label` forwards to that caption, and the css classes stay on
-     * the indicator itself, where font and colour inherit down to the caption.
+     * being one. `label` and `icon_name` forward to their widgets, and the css
+     * classes stay on the indicator itself, where colour inherits down to the
+     * symbolic icon as well as the caption. Either part hides while empty, so
+     * an icon-only indicator carries no stray spacing.
+     *
+     * Icons are looked up by their freedesktop names, so the user's icon theme
+     * restyles the bar; Adwaita, which GTK itself depends on, is the fallback.
      */
     public abstract class TextIndicator : Gtk.Box {
 
+        protected Gtk.Image glyph;
         protected Gtk.Label caption;
 
         public string label {
             get { return caption.label; }
-            set { caption.label = value; }
+            set {
+                caption.label = value;
+                caption.visible = value != "";
+            }
+        }
+
+        public string? icon_name {
+            owned get { return glyph.icon_name; }
+            set {
+                glyph.icon_name = value;
+                glyph.visible = value != null;
+            }
         }
 
         construct {
-            caption = new Gtk.Label ("");
+            glyph = new Gtk.Image () { visible = false };
+            caption = new Gtk.Label ("") { visible = false };
+            append (glyph);
             append (caption);
         }
     }
@@ -80,6 +102,12 @@ namespace Centaur.Topbar {
                         return null;
                     }
                     return new FocusedWindowIndicator (context);
+
+                case "taskbar":
+                    if (!context.toplevels.available) {
+                        return null;
+                    }
+                    return new TaskbarIndicator (context);
 
                 case "network": return new NetworkIndicator ();
                 case "volume":  return new VolumeIndicator ();

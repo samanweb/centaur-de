@@ -143,8 +143,8 @@ must keep the suite at 93/93.
 
 ## Provenance and known gaps
 
-The palette was reconstructed from the four Base Center reference screenshots
-and the topbar image. **Those files were removed from `screenshots/` during the
+The palette was reconstructed from four reference screenshots of a settings
+window (Base Center, since removed from the project) and the topbar image. **Those files were removed from `screenshots/` during the
 session that produced this system**, so the hex values are a reading of those
 images rather than a measurement of them.
 

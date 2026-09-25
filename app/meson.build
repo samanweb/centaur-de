@@ -1,5 +1,5 @@
 project('centaur', ['c', 'vala'],
-  version: '0.1.0',
+  version: '0.1.11',
   license: 'GPL-3.0-or-later',
   meson_version: '>= 0.62.0',
   default_options: ['warning_level=2', 'c_std=gnu11'],
@@ -36,35 +36,52 @@ gio_dep     = dependency('gio-2.0')
 giounix_dep = dependency('gio-unix-2.0')
 json_dep    = dependency('json-glib-1.0')
 gtk_dep     = dependency('gtk4',        version: '>= 4.12')  # load_from_string
+
+# GTK 4.20 replaced two APIs Centaur uses (Calendar.select_day and
+# Settings:gtk-application-prefer-dark-theme). The code picks the new one with
+# `#if GTK_4_20`, so a current GTK builds without deprecation warnings and
+# 4.12 still builds at all.
+if gtk_dep.version().version_compare('>= 4.20')
+  add_project_arguments('--define=GTK_4_20', language: 'vala')
+endif
 layershell_dep = dependency('gtk4-layer-shell-0', required: get_option('topbar'))
-cairo_dep   = dependency('cairo')
 math_dep    = meson.get_compiler('c').find_library('m', required: false)
 
 # libm is in base_deps rather than only in ui_deps: any target may reach for
 # GLib's Math bindings, and -Wl,--as-needed drops the link for those that do not.
 base_deps = [glib_dep, gobject_dep, gio_dep, giounix_dep, json_dep, math_dep]
-ui_deps   = base_deps + [gtk_dep, cairo_dep]
+ui_deps   = base_deps + [gtk_dep]
 
+subdir('protocols')
 subdir('lib')
 subdir('daemons/sysd')
 subdir('daemons/settingsd')
+subdir('daemons/bg')
 subdir('session')
 if get_option('topbar')
   subdir('modules/topbar')
 endif
-if get_option('base-center')
-  subdir('modules/base-center')
+if get_option('displays')
+  subdir('modules/displays')
+endif
+if get_option('background')
+  subdir('modules/background')
+endif
+if get_option('screenshot')
+  subdir('modules/screenshot')
 endif
 subdir('data')
 
 gnome.post_install(
   glib_compile_schemas: true,
-  gtk_update_icon_cache: false,
+  gtk_update_icon_cache: true,
   update_desktop_database: true,
 )
 
 summary({
   'prefix'      : prefix,
   'topbar'      : get_option('topbar'),
-  'base-center' : get_option('base-center'),
+  'displays'    : get_option('displays'),
+  'background'  : get_option('background'),
+  'screenshot'  : get_option('screenshot'),
 }, section: 'Centaur')

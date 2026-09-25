@@ -1,4 +1,8 @@
 option('topbar',      type: 'boolean', value: true,
        description: 'Build centaur-topbar (requires gtk4-layer-shell)')
-option('base-center', type: 'boolean', value: true,
-       description: 'Build centaur-base-center')
+option('displays',    type: 'boolean', value: true,
+       description: 'Build centaur-displays, the display settings window')
+option('background',  type: 'boolean', value: true,
+       description: 'Build centaur-background, the wallpaper chooser')
+option('screenshot',  type: 'boolean', value: true,
+       description: 'Build centaur-screenshot (requires gtk4-layer-shell)')

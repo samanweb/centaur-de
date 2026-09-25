@@ -3,7 +3,7 @@ namespace Centaur.Sysd {
     /**
      * A long-running privileged operation, exported on its own object path.
      *
-     * The job lives here rather than in the client, so closing Base Center
+     * The job lives here rather than in the client, so closing the client
      * mid-upgrade does not kill the upgrade and reopening re-attaches by path.
      *
      * Progress stays at -1 until a backend can actually report a percentage.

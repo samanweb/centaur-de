@@ -61,7 +61,7 @@ namespace Centaur.Core {
     /**
      * A long-running privileged operation.
      *
-     * The job lives in centaur-sysd, so closing Base Center mid-upgrade does
+     * The job lives in centaur-sysd, so closing the client mid-upgrade does
      * not kill the upgrade; reopening re-attaches by object path.
      */
     [DBus (name = "org.centaur.System1.Job")]

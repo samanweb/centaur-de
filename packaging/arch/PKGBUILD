@@ -8,43 +8,65 @@
 # Nothing is downloaded; the sources are the working tree two levels up.
 
 pkgname=centaur-de
-pkgver=0.1.0
+pkgver=0.1.11
 pkgrel=1
-pkgdesc='Lightweight Wayland desktop environment: topbar, Base Center and session'
+pkgdesc='Lightweight Wayland desktop environment: topbar, wallpaper, display settings and session'
 arch=('x86_64' 'aarch64')
 url='https://example.invalid/centaur'
 license=('GPL-3.0-or-later')
 
+# These three arrays are the one list of what Centaur needs. install.sh reads
+# them from here, so the package and the installer cannot disagree.
+
 depends=(
+  # Compositor
+  'labwc'               # Centaur's official compositor
+  'xorg-xwayland'       # X11 applications under labwc
+
+  # Libraries
   'gtk4'
   'gtk4-layer-shell'
   'glib2'
   'json-glib'
-  'cairo'
   'pango'
+  'wayland'             # libwayland-client: taskbar window list, display settings
+  'gdk-pixbuf2'         # wallpaper thumbnails and previews
+  'librsvg'             # Centaur's wallpapers are SVG; gdk-pixbuf needs it to read them
   'polkit'
-  'util-linux'          # lsblk, for the Overview and Security pages
-  'labwc'               # the reference compositor; see optdepends for sway
+
+  # Session tools
+  'swaylock'            # Lock in the power menu; logind alone cannot lock
+  'swaybg'              # draws the wallpaper for centaur-bg
+  'grim'                # captures screenshots (wlr-screencopy)
+  'slurp'               # selects a display or area to capture
+  'wl-clipboard'        # wl-copy keeps a screenshot on the clipboard after capture
+  'util-linux'          # lsblk, for centaur-sysd's host and security reports
   'pacman-contrib'      # checkupdates; without it update checks cannot refresh
+
+  # Look
+  'inter-font'          # the interface font
+  'adwaita-icon-theme'  # fallback for the topbar's freedesktop icon names
 )
 
 makedepends=(
   'meson'
   'ninja'
   'vala'
+  'wayland'             # wayland-scanner
   'python'              # design-system generator, run as a meson test
 )
 
+# install.sh installs all of these too, except sway (an alternative compositor,
+# not Centaur's) and pipewire-pulse where PulseAudio is already the sound server.
 optdepends=(
-  'sway: workspace pager and focused-window indicator in the topbar'
-  'networkmanager: network indicator'
-  'upower: battery indicator'
-  'libpulse: volume indicator (pactl)'
-  'pipewire-pulse: volume indicator on a PipeWire system'
-  'libnotify: notification when a supervised module stops'
-  'papirus-icon-theme: the default icon theme'
-  'ttf-jetbrains-mono: the default monospace font'
-  'inter-font: the default interface font'
+  'networkmanager: network indicator in the topbar'
+  'upower: battery indicator in the topbar'
+  'libpulse: pactl, for the volume indicator'
+  'pipewire-pulse: the sound server the volume indicator talks to'
+  'libnotify: notify-send, for notices from the session'
+  'ttf-jetbrains-mono: the monospace font'
+  'papirus-icon-theme: an alternative icon theme the topbar follows'
+  'sway: alternative compositor (not the official one); adds the workspace pager and window title'
 )
 
 provides=('centaur-de')

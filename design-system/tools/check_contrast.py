@@ -19,7 +19,8 @@ BODY, LARGE = 4.5, 3.0
 
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from color import best_ink, ratio  # noqa: E402
+from color import best_ink, mix, ratio  # noqa: E402
+from generate import MENU_HIGHLIGHT  # noqa: E402
 
 
 # text token -> minimum required ratio. 'muted' and 'disabled' are deliberately
@@ -65,6 +66,19 @@ def main() -> int:
             if r < BODY:
                 failures.append(
                     f"{palette_name}: {accent_name} ink on accent fill "
+                    f"= {r:.2f} (need {BODY})"
+                )
+
+        # labwc's highlighted menu item: primary text on the accent-tinted
+        # overlay the generated themerc paints.
+        overlay = palette["surface"]["overlay"]
+        for accent_name, accent in data["accents"].items():
+            highlight = mix(accent[steps["base"]], overlay, MENU_HIGHLIGHT)
+            checks += 1
+            r = ratio(palette["text"]["primary"], highlight)
+            if r < BODY:
+                failures.append(
+                    f"{palette_name}: text.primary on {accent_name} menu highlight "
                     f"= {r:.2f} (need {BODY})"
                 )
 

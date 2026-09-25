@@ -30,9 +30,15 @@ grep -v '^#' "${MANIFEST}" | while IFS= read -r path; do
 done
 
 sudo glib-compile-schemas /usr/share/glib-2.0/schemas 2>/dev/null || true
+sudo gtk-update-icon-cache -qtf /usr/share/icons/hicolor 2>/dev/null || true
 sudo systemctl daemon-reload 2>/dev/null || true
 
 printf '\033[32mCentaur DE removed.\033[0m\n'
 echo "Per-user configuration in ~/.config/centaur* and the dconf keys under"
 echo "/org/centaur/ were left alone. Remove them with:"
 echo "  dconf reset -f /org/centaur/"
+echo "Saved display layouts are in ~/.config/centaur/displays.json."
+echo "Pictures added as wallpapers are in ~/.local/share/backgrounds."
+echo "swaylock and swaybg, installed for the lock screen and wallpaper, were left"
+echo "in place; remove them with"
+echo "your package manager if nothing else uses it."

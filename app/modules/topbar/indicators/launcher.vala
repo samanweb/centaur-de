@@ -1,7 +1,7 @@
 namespace Centaur.Topbar {
 
     /**
-     * The START button and its application list.
+     * The launcher button and its application list.
      *
      * The standalone centaur-launcher is Phase 2 work. Until it exists this
      * provides the same job from inside the bar, built on GLib.AppInfo so it
@@ -28,11 +28,11 @@ namespace Centaur.Topbar {
             // GtkMenuButton is final in GTK4, so the indicator holds one
             // rather than being one.
             button = new Gtk.MenuButton () {
-                label = "START",
+                icon_name = start_icon (),
                 tooltip_text = "Applications",
             };
             button.add_css_class ("centaur-indicator");
-            button.add_css_class ("flat");
+            button.add_css_class ("centaur-launcher-button");
             append (button);
 
             search = new Gtk.SearchEntry () {
@@ -55,7 +55,8 @@ namespace Centaur.Topbar {
             box.append (search);
             box.append (scroller);
 
-            menu = new Gtk.Popover () { child = box };
+            menu = new Gtk.Popover () { child = box, has_arrow = false };
+            menu.add_css_class ("centaur-topbar-menu");
             button.popover = menu;
 
             search.search_changed.connect (() => filter (search.text));
@@ -76,6 +77,20 @@ namespace Centaur.Topbar {
                     search.grab_focus ();
                 }
             });
+        }
+
+        /**
+         * Centaur's own mark, shipped in hicolor. A tree run without
+         * installing, or a broken icon cache, falls back to the stock grid
+         * rather than to a missing-image square.
+         */
+        private static string start_icon () {
+            var display = Gdk.Display.get_default ();
+            if (display != null
+                && Gtk.IconTheme.get_for_display (display).has_icon ("centaur-start-symbolic")) {
+                return "centaur-start-symbolic";
+            }
+            return "view-app-grid-symbolic";
         }
 
         private void populate () {

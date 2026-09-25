@@ -58,12 +58,32 @@ state red.
 
 ### `.centaur-topbar`
 Root layer-shell surface. `surface.topbar`, hairline bottom border, min-height
-32px, 12px base font.
+32px, 4px side padding. Set in `font.family-ui` (Inter, falling back to
+Adwaita Sans) at 12px/500 with tabular figures (`tnum`), so the clock and
+percentages never shift the bar as digits change.
 
 ### `.centaur-indicator`
-Base class for every topbar item. 8px horizontal padding, `radius.sm`,
-`text.secondary`. `:hover` raises to `surface.card-hover`; `.active` (popover
-open) lifts text to `text.primary`.
+Base class for every topbar item: a 24px-high pill inside the 32px bar, 8px
+horizontal padding, `radius.sm`, `text.secondary`, 8px between icon and text.
+`:hover` raises to `surface.card-hover` and lifts text to `text.primary`; a
+menubutton indicator stays lit while its menu is open. `.warning` and `.danger`
+tint it with the status colours — reinforcing a state the icon already shows.
+
+Icons are 16px symbolic, looked up by their freedesktop names
+(`network-wireless-signal-*`, `audio-volume-*`, `battery-level-*`, …) so the
+user's icon theme restyles the bar; Adwaita is the fallback. The one icon
+Centaur ships is the launcher mark, `centaur-start-symbolic`, drawn in
+`accent.base`.
+
+| Indicator | In the bar | In the tooltip |
+|---|---|---|
+| launcher | mark | — |
+| taskbar | one icon per running app | app name, window title or count |
+| network | link type / Wi-Fi strength | connection name, signal |
+| volume | level icon (click mutes, scroll steps 5%) | percentage |
+| battery | level icon + percentage | time remaining |
+| clock | `clock-format`, `text.primary`; click opens a calendar | full date |
+| power | shutdown icon | — |
 
 **Indicators build their popover on first click, never at construction.** This
 is a resource requirement from `architecture.md` §4.1, not a style note.
@@ -76,34 +96,99 @@ monochrome screenshot:
 |---|---|
 | empty | `text.muted`, no background |
 | `.occupied` | `text.secondary` |
-| `.active` | `accent.bg` fill, `accent.base` text, weight 500 |
+| `.active` | `accent.bg` fill, `accent.base` text, weight 600 |
+
+### `.centaur-task`
+One per running application, windows grouped by app id, in opening order. An
+18px full-colour app icon in a 24px pill. Three states, readable without
+colour:
+
+| State | Appearance |
+|---|---|
+| running | icon only |
+| `.active` | `surface.card-hover` fill, 2px `accent.base` underline |
+| `.minimized` (every window) | icon at 50% opacity |
+
+### `calendar.centaur-calendar`
+The clock's popover: a full-date heading at 13px/600, then a transparent
+`GtkCalendar` with 32px day cells. Today is `accent.base` at weight 600; the
+selected day is an `accent.base` fill with `accent.ink` text; other-month days
+are `text.disabled`. It always opens on today.
 
 ### `.centaur-focused-window`
-Mono, 12px, `text.secondary`. Ellipsises at the end; never wraps.
+The window title only, `font.family-ui` at weight 400, `text.secondary`, no
+hover fill. Ellipsises at the end at 60 characters; never wraps. The app id is
+in the tooltip.
+
+### labwc: titlebars, desktop menu, window menu, window switcher
+labwc draws these itself, so they are themed through a generated labwc theme,
+`Centaur-<accent>-<palette>` (24 of them, installed in `/usr/share/themes`),
+selected by centaur-settingsd in `rc.xml` as palette and accent change.
+
+| Element | Tokens |
+|---|---|
+| Menu | `surface.overlay`, hairline `border.default`, `text.primary`, 12/7px item padding, 200–320px wide |
+| Highlighted item | `accent.base` mixed 20% over `surface.overlay`, `text.primary` (contrast-gated at 4.5:1) |
+| Separator | `border.subtle`, 8px inset |
+| Titlebar | `surface.sidebar` active / `surface.window` inactive, like the GTK headerbar; buttons `text.secondary` with a `radius.sm` hover |
+| Window switcher | `surface.overlay`, active item with a 2px `accent.base` border |
+| Snapping overlay | `accent.base` at 25% |
+
+`rc.xml` also sets `font-ui` (Inter) for titles (bold), menus and the switcher,
+10px window corners, drop shadows, and text-only menus: labwc draws menu icons
+in their own colours, so symbolic icons would be near-black on a dark menu.
+labwc menus have square corners; it has no setting for them.
+
+### Screenshot: `.centaur-screenshot-mode`, `.centaur-screenshot-card`
+Mode toggles are 96px-wide buttons with a 24px icon over the label;
+`:checked` takes `accent.bg`, an `accent.base` border and accent text. The
+confirmation card is a layer-shell overlay 40px below the top edge (clear of
+the topbar): `surface.overlay`, hairline `border.default`, `radius.lg`, a
+280px thumbnail in `radius.sm`, 14px/600 heading. `.danger` borders it in
+`status.danger`. Its window is fully transparent, or GTK's theme would draw a
+light box behind the rounded card.
+
+### Button labels inherit
+`button label, button image { color: inherit }`. Without it, the base `label`
+rule gave every accent button `text.primary` instead of its contrast-chosen
+`accent.ink`.
+
+### `.centaur-wallpaper-preview` / `.centaur-wallpaper`
+The Background window. The preview is the first monitor's shape with
+`radius.lg`, the background colour painted under the picture exactly as swaybg
+shows it around 'fit' and 'center'. Library tiles are 224×126, `radius.sm`,
+cropped to cover. Selection is a 2px `accent.base` ring *outside* the picture,
+never a tint over it: the picture is what is being judged.
+
+### Wallpapers
+`app/data/backgrounds/centaur-<accent>-<palette>.svg`, generated from the
+tokens: a `surface.window`→`surface.card` diagonal, an accent glow top-right,
+an `accent.dim` ember bottom-left and faint concentric rings. The default is
+`centaur-emerald-dark.svg`.
+
+### Buttons and title bars against GTK's theme
+GTK's built-in theme paints buttons (and the switch knob) with a
+`background-image` gradient in every state, drawn over `background-color`.
+The button rules reset it, or no token colour is ever visible. `headerbar` is
+styled from the tokens, and `Ui.Theme` sets `gtk-application-prefer-dark-theme`
+from the resolved palette so unstyled widgets follow the palette too.
+
+### `.centaur-display-canvas` / `.centaur-display-tile`
+The arrangement in Displays. The canvas is `surface.window` with a hairline
+`border.subtle` and `radius.md`; each monitor is a tile drawn to scale in
+`surface.raised` with a `border.strong` hairline and `radius.sm`, showing the
+connector name (12px/600) and resolution (caption). `.selected` takes a 2px
+`accent.base` border and an `accent.bg` fill. Tiles snap edge-to-edge when
+dropped, never overlapping.
+
+### `.centaur-topbar-menu` / `.centaur-menu-item`
+Topbar popovers drop the arrow and use 4px padding. A menu item is a flat
+32px row, icon then label, 12px apart; `.danger` (Power Off) takes
+`status.danger` text and a `status.danger-bg` hover.
 
 ### `.centaur-badge`
 Notification count. `accent.base` fill, `accent.ink` text, pill radius, 11px/600.
 Hidden at zero — never renders "0".
-
----
-
-## Base Center shell (module 02)
-
-### `.centaur-sidebar`
-`surface.sidebar`, 220px, hairline right border, 8px padding.
-
-### `.centaur-sidebar-row`
-32px min-height, `radius.md`. `:selected` takes `accent.bg` with `accent.base`
-text at weight 500 — matching the workspace pill, so selection reads the same
-way in both modules.
-
-### `entry.centaur-search`
-`surface.card` fill, hairline `border.default`, `radius.md`. On `:focus` the
-border becomes `accent.base`; the focus ring still draws.
-
-### `.centaur-content`
-Scrolling page region. `surface.window`, 24px padding. Content caps at 1100px
-(`layout.content-max-width`) so cards do not stretch on ultrawide displays.
 
 ---
 

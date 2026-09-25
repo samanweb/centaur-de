@@ -8,6 +8,20 @@ namespace Centaur.Ui {
      * alpha(@centaur_accent_base, ...) and @define-color resolves in the order
      * it is seen. All three sheets go into one provider so a reload is atomic.
      */
+    /**
+     * gtk_style_context_add_provider_for_display(), bound directly.
+     *
+     * The function is not deprecated -- it is GDK_AVAILABLE_IN_ALL in
+     * gtkstyleprovider.h, and GTK has no replacement for installing a
+     * display-wide provider. Only the GtkStyleContext *class* is deprecated
+     * (4.10), and the Vala binding hangs this function off it, so calling it as
+     * Gtk.StyleContext.add_provider_for_display() warns about the wrong thing.
+     */
+    [CCode (cname = "gtk_style_context_add_provider_for_display", cheader_filename = "gtk/gtk.h")]
+    private extern void add_provider_for_display (Gdk.Display display,
+                                                  Gtk.StyleProvider provider,
+                                                  uint priority);
+
     public class Theme : Object {
 
         private const string FALLBACK_ACCENT = "emerald";
@@ -36,12 +50,7 @@ namespace Centaur.Ui {
                 return;
             }
 
-            // valac warns that Gtk.StyleContext is deprecated. The class is;
-            // this function is not -- gtk_style_context_add_provider_for_display
-            // is GDK_AVAILABLE_IN_ALL in gtkstyleprovider.h, and GTK ships no
-            // replacement. The warning is an artefact of the Vala binding
-            // hanging the function off the deprecated class.
-            Gtk.StyleContext.add_provider_for_display (
+            add_provider_for_display (
                 display, this.provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
             // Connected once. GTK reports parse errors through a signal rather
@@ -54,6 +63,7 @@ namespace Centaur.Ui {
             });
 
             reload ();
+            add_icon_search_path (display);
 
             // Both keys change the accent block, so both trigger a reload.
             config.appearance.changed["colour-mode"].connect (() => queue_reload ());
@@ -118,6 +128,23 @@ namespace Centaur.Ui {
             }
 
             provider.load_from_string (css);
+
+            // The stylesheet covers Centaur's own components; everything it
+            // does not style (entries, scrollbars, window buttons) comes from
+            // GTK's theme, which has to be told which palette is in use or it
+            // stays light under a dark desktop.
+            var gtk_settings = Gtk.Settings.get_default ();
+            if (gtk_settings != null) {
+#if GTK_4_20
+                gtk_settings.gtk_interface_color_scheme = palette != "light"
+                    ? Gtk.InterfaceColorScheme.DARK
+                    : Gtk.InterfaceColorScheme.LIGHT;
+#else
+                // GTK before 4.20 has only the older boolean.
+                gtk_settings.gtk_application_prefer_dark_theme = palette != "light";
+#endif
+            }
+
             Core.Log.debug ("loaded palette=%s accent=%s", palette, accent);
         }
 
@@ -158,13 +185,28 @@ namespace Centaur.Ui {
         }
 
         /**
+         * Installed icons are in hicolor and need nothing. An uninstalled tree
+         * keeps them beside its themes, so that is added to the search path.
+         */
+        private static void add_icon_search_path (Gdk.Display display) {
+            var dir = theme_dir ();
+            if (dir == null) {
+                return;
+            }
+            var icons = Path.build_filename (Path.get_dirname (dir), "icons");
+            if (FileUtils.test (icons, FileTest.IS_DIR)) {
+                Gtk.IconTheme.get_for_display (display).add_search_path (icons);
+            }
+        }
+
+        /**
          * Where the generated stylesheets live.
          *
          * CENTAUR_THEME_DIR first so the tree can be run without installing,
          * then the XDG data directories so a --prefix install is found without
          * compiling the path in.
          */
-        private static string? theme_dir () {
+        public static string? theme_dir () {
             var env = Environment.get_variable ("CENTAUR_THEME_DIR");
             if (env != null && FileUtils.test (env, FileTest.IS_DIR)) {
                 return env;
@@ -179,6 +221,36 @@ namespace Centaur.Ui {
 
             var fallback = "/usr/share/centaur/themes";
             return FileUtils.test (fallback, FileTest.IS_DIR) ? fallback : null;
+        }
+
+        /**
+         * The current accent's base colour for a palette, as #rrggbb, read
+         * from the generated accent-map.json. For programs that colour
+         * something GTK does not draw -- slurp's selection outline, say.
+         */
+        public static string accent_hex (string palette) {
+            var fallback = "#35d399";
+            var dir = theme_dir ();
+            if (dir == null) {
+                return fallback;
+            }
+            var accent = Core.Config.get_default ().appearance.get_string ("accent");
+            try {
+                var parser = new Json.Parser ();
+                parser.load_from_file (Path.build_filename (dir, "accent-map.json"));
+                var resolved = parser.get_root ().get_object ()
+                    .get_object_member ("resolved");
+                if (!resolved.has_member (palette)) {
+                    return fallback;
+                }
+                var ramps = resolved.get_object_member (palette);
+                if (!ramps.has_member (accent)) {
+                    return fallback;
+                }
+                return ramps.get_object_member (accent).get_string_member ("base");
+            } catch (GLib.Error e) {
+                return fallback;
+            }
         }
 
         private static string? read (string path) {

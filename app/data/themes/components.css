@@ -20,7 +20,7 @@ window,
 .centaur-window {
   background-color: @centaur_surface_window;
   color: @centaur_text_primary;
-  font-family: Inter, 'Noto Sans', sans-serif;
+  font-family: Inter, 'Adwaita Sans', 'Noto Sans', sans-serif;
   font-size: 13px;
 }
 
@@ -61,27 +61,75 @@ label.mono { font-family: 'JetBrains Mono', 'Noto Sans Mono', monospace; }
 
 /* --- topbar (module 01) --------------------------------------------------- */
 
+/* Tabular figures keep the clock and percentages from shifting the bar a
+   pixel every time a digit changes. */
 .centaur-topbar {
   background-color: @centaur_surface_topbar;
   border-bottom: 1px solid @centaur_border_subtle;
   min-height: 32px;
+  padding: 0 4px;
+  font-family: Inter, 'Adwaita Sans', 'Noto Sans', sans-serif;
   font-size: 12px;
+  font-weight: 500;
+  font-feature-settings: "tnum";
 }
 
+.centaur-topbar > centerbox > box { border-spacing: 2px; }
+
 .centaur-indicator {
+  min-height: 24px;
+  margin: 4px 0;
   padding: 0 8px;
   border-radius: 6px;
   color: @centaur_text_secondary;
-  transition: background-color 120ms cubic-bezier(0.2, 0, 0, 1);
+  border-spacing: 8px;
+  transition: background-color 120ms cubic-bezier(0.2, 0, 0, 1),
+              color 120ms cubic-bezier(0.2, 0, 0, 1);
 }
-.centaur-indicator:hover  { background-color: @centaur_surface_card_hover; }
+.centaur-indicator:hover  {
+  background-color: @centaur_surface_card_hover;
+  color: @centaur_text_primary;
+}
 .centaur-indicator:active,
 .centaur-indicator.active { color: @centaur_text_primary; }
 
+/* A menubutton draws through its inner toggle button, so the indicator's
+   padding and hover move down one node, and stay lit while the menu is open. */
+menubutton.centaur-indicator,
+menubutton.centaur-indicator:hover {
+  padding: 0;
+  background-color: transparent;
+}
+menubutton.centaur-indicator > button {
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border-color: transparent;
+  background-color: transparent;
+  box-shadow: none;
+  color: inherit;
+}
+menubutton.centaur-indicator > button:hover,
+menubutton.centaur-indicator > button:checked {
+  background-color: @centaur_surface_card_hover;
+  color: @centaur_text_primary;
+}
+
+/* Colour reinforces a state the icon already shows; it never carries it. */
+.centaur-indicator.warning { color: @centaur_status_warning; }
+.centaur-indicator.danger  { color: @centaur_status_danger; }
+
+.centaur-indicator image { -gtk-icon-size: 16px; }
+
+.centaur-launcher-button image { color: @centaur_accent_base; }
+
+.centaur-clock { color: @centaur_text_primary; }
+
 .centaur-workspace {
   min-width: 24px;
+  min-height: 24px;
+  margin: 4px 0;
   padding: 0 4px;
-  margin: 0 2px;
   border-radius: 6px;
   color: @centaur_text_muted;
 }
@@ -89,14 +137,104 @@ label.mono { font-family: 'JetBrains Mono', 'Noto Sans Mono', monospace; }
 .centaur-workspace.active {
   background-color: @centaur_accent_bg;
   color: @centaur_accent_base;
-  font-weight: 500;
+  font-weight: 600;
 }
+
+/* Running applications. Focus is a fill plus an accent underline, and a fully
+   minimised app is dimmed, so all three states read without colour. */
+.centaur-taskbar {
+  margin-left: 4px;
+  border-spacing: 2px;
+}
+/* An indicator with nothing to show stays mapped (it subscribes on map) and
+   collapses to nothing instead of hiding. */
+.centaur-taskbar.empty,
+.centaur-indicator.empty {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+}
+
+.centaur-task {
+  min-width: 24px;
+  min-height: 24px;
+  margin: 4px 0;
+  padding: 0 4px;
+  border-radius: 6px;
+  transition: background-color 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+.centaur-task.active {
+  background-color: @centaur_surface_card_hover;
+  box-shadow: inset 0 -2px @centaur_accent_base;
+}
+.centaur-task.minimized image { opacity: 0.5; }
 
 .centaur-focused-window {
   color: @centaur_text_secondary;
-  font-family: 'JetBrains Mono', 'Noto Sans Mono', monospace;
-  font-size: 12px;
+  font-weight: 400;
 }
+.centaur-focused-window:hover { background-color: transparent; }
+
+.centaur-topbar-menu > contents { padding: 4px; }
+
+.centaur-menu-item {
+  min-height: 32px;
+  min-width: 180px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-weight: 400;
+}
+.centaur-menu-item box { border-spacing: 12px; }
+.centaur-menu-item.danger {
+  background-color: transparent;
+  border-color: transparent;
+  color: @centaur_status_danger;
+}
+.centaur-menu-item.danger:hover { background-color: @centaur_status_danger_bg; }
+
+.centaur-calendar-heading {
+  padding: 4px 8px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: @centaur_text_primary;
+}
+
+calendar.centaur-calendar {
+  background-color: transparent;
+  border: none;
+  color: @centaur_text_primary;
+  font-feature-settings: "tnum";
+}
+calendar.centaur-calendar > header { border: none; background-color: transparent; }
+calendar.centaur-calendar > header > button {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  border-radius: 6px;
+}
+calendar.centaur-calendar > header > button:hover { background-color: @centaur_surface_card_hover; }
+calendar.centaur-calendar > grid > label {
+  min-width: 32px;
+  min-height: 32px;
+  margin: 1px;
+  border-radius: 6px;
+}
+calendar.centaur-calendar > grid > label.day-name {
+  color: @centaur_text_muted;
+  font-size: 11px;
+}
+calendar.centaur-calendar > grid > label.other-month { color: @centaur_text_disabled; }
+calendar.centaur-calendar > grid > label.today {
+  color: @centaur_accent_base;
+  font-weight: 600;
+  box-shadow: none;
+}
+calendar.centaur-calendar > grid > label:selected {
+  background-color: @centaur_accent_base;
+  color: @centaur_accent_ink;
+}
+
+.centaur-topbar-menu separator { margin: 4px 2px; }
 
 .centaur-badge {
   background-color: @centaur_accent_base;
@@ -108,42 +246,108 @@ label.mono { font-family: 'JetBrains Mono', 'Noto Sans Mono', monospace; }
   min-width: 16px;
 }
 
-/* --- base center shell (module 02) ---------------------------------------- */
+/* --- display settings (centaur-displays) ------------------------------------ */
 
-.centaur-sidebar {
-  background-color: @centaur_surface_sidebar;
-  border-right: 1px solid @centaur_border_subtle;
-  min-width: 220px;
-  padding: 8px;
-}
-
-.centaur-sidebar-row {
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 10px;
-  color: @centaur_text_secondary;
-  transition: background-color 120ms cubic-bezier(0.2, 0, 0, 1);
-}
-.centaur-sidebar-row:hover { background-color: @centaur_surface_card_hover; }
-.centaur-sidebar-row:selected {
-  background-color: @centaur_accent_bg;
-  color: @centaur_accent_base;
-  font-weight: 500;
-}
-
-.centaur-search entry,
-entry.centaur-search {
-  background-color: @centaur_surface_card;
-  border: 1px solid @centaur_border_default;
-  border-radius: 10px;
-  padding: 8px 12px;
-  color: @centaur_text_primary;
-}
-entry.centaur-search:focus { border-color: @centaur_accent_base; }
-
-.centaur-content {
+.centaur-display-canvas {
   background-color: @centaur_surface_window;
-  padding: 24px;
+  border: 1px solid @centaur_border_subtle;
+  border-radius: 10px;
+}
+
+/* A monitor in the arrangement. Selection is a thicker accent border and an
+   accent tint, so it still reads in a monochrome screenshot. */
+.centaur-display-tile {
+  background-color: @centaur_surface_raised;
+  border: 1px solid @centaur_border_strong;
+  border-radius: 6px;
+  padding: 2px;
+}
+.centaur-display-tile:hover { background-color: @centaur_surface_card_hover; }
+.centaur-display-tile.selected {
+  background-color: @centaur_accent_bg;
+  border: 2px solid @centaur_accent_base;
+}
+.centaur-display-tile-name {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* --- background settings (centaur-background) ------------------------------ */
+
+.centaur-wallpaper-preview {
+  border: 1px solid @centaur_border_default;
+  border-radius: 14px;
+}
+
+.centaur-wallpaper-grid > flowboxchild {
+  padding: 2px;
+  border-radius: 10px;
+  outline: none;
+}
+.centaur-wallpaper {
+  border: 1px solid @centaur_border_subtle;
+  border-radius: 6px;
+  background-color: @centaur_surface_raised;
+  transition: border-color 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+.centaur-wallpaper-grid > flowboxchild:hover .centaur-wallpaper {
+  border-color: @centaur_border_strong;
+}
+/* Selection is a thick accent ring outside the picture, never a tint over
+   it: the picture is what is being judged. */
+.centaur-wallpaper-grid > flowboxchild:selected {
+  background-color: transparent;
+  box-shadow: 0 0 0 2px @centaur_accent_base;
+}
+.centaur-wallpaper-grid > flowboxchild:focus-visible {
+  box-shadow: 0 0 0 2px @centaur_accent_bright;
+}
+
+/* --- screenshot (centaur-screenshot) --------------------------------------- */
+
+.centaur-screenshot-mode {
+  min-width: 96px;
+  padding: 12px 8px;
+  border-radius: 10px;
+}
+.centaur-screenshot-mode:checked {
+  background-color: @centaur_accent_bg;
+  border-color: @centaur_accent_base;
+  color: @centaur_accent_base;
+}
+
+/* The confirmation card is its own layer-shell surface, so the window behind
+   it must be transparent for the card's rounded corners to show. */
+/* GTK's built-in theme paints window.background and a decoration shadow on
+   every toplevel; both would show as a light box around the rounded card. */
+window.centaur-screenshot-toast,
+window.centaur-screenshot-toast.background {
+  background: none;
+  box-shadow: none;
+  border: none;
+}
+.centaur-screenshot-card {
+  background-color: @centaur_surface_overlay;
+  border: 1px solid @centaur_border_default;
+  border-radius: 14px;
+  padding: 4px 12px 12px;
+  margin: 2px;
+}
+.centaur-screenshot-card.danger { border-color: @centaur_status_danger; }
+.centaur-screenshot-heading {
+  font-weight: 600;
+  font-size: 14px;
+}
+.centaur-screenshot-thumb {
+  border: 1px solid @centaur_border_subtle;
+  border-radius: 6px;
+}
+.centaur-screenshot-close {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  margin-right: -8px;
+  border-radius: 999px;
 }
 
 /* --- card ----------------------------------------------------------------- */
@@ -191,6 +395,9 @@ switch {
 switch:checked  { background-color: @centaur_accent_base; }
 switch:disabled { background-color: @centaur_control_track_disabled; }
 switch slider {
+  background-image: none;
+  box-shadow: none;
+  border: none;
   background-color: @centaur_control_thumb;
   border-radius: 999px;
 }
@@ -209,6 +416,20 @@ scale slider {
   border-radius: 999px;
   min-width: 16px;
   min-height: 16px;
+}
+
+/* GTK's built-in theme paints buttons with a background-image gradient in
+   every state, drawn over background-color -- so without this reset none of
+   the colours below are ever seen, and buttons come out light-on-light. */
+button,
+button:hover,
+button:active,
+button:checked,
+button:disabled,
+button:backdrop {
+  background-image: none;
+  box-shadow: none;
+  text-shadow: none;
 }
 
 button {
@@ -230,6 +451,18 @@ button.accent {
 }
 button.accent:hover { background-color: @centaur_accent_bright; }
 
+/* A button's label and icon take the button's colour. Without this the base
+   `label` rule wins, and every accent button shows text.primary -- light text
+   on a light accent -- instead of the accent ink chosen for contrast. */
+button label,
+button image { color: inherit; }
+/* A disabled accent button must not still look like the thing to press. */
+button.accent:disabled {
+  background-color: @centaur_control_fill;
+  border-color: @centaur_border_default;
+  color: @centaur_text_disabled;
+}
+
 button.danger {
   background-color: @centaur_status_danger_bg;
   color: @centaur_status_danger;
@@ -244,6 +477,32 @@ button.flat {
 button.flat:hover { background-color: @centaur_surface_card_hover; }
 
 button.pill { border-radius: 999px; }
+
+button:checked { background-color: @centaur_surface_raised; }
+
+/* The title bar of Centaur's own windows. */
+headerbar {
+  background-color: @centaur_surface_sidebar;
+  background-image: none;
+  color: @centaur_text_primary;
+  border-bottom: 1px solid @centaur_border_subtle;
+  box-shadow: none;
+  min-height: 40px;
+}
+headerbar:backdrop { background-color: @centaur_surface_window; }
+headerbar .title {
+  font-weight: 600;
+  color: @centaur_text_primary;
+}
+headerbar windowcontrols button {
+  background-color: transparent;
+  border-color: transparent;
+  padding: 4px;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 999px;
+}
+headerbar windowcontrols button:hover { background-color: @centaur_surface_card_hover; }
 
 /* --- data display --------------------------------------------------------- */
 

@@ -177,6 +177,10 @@ namespace Centaur.Session {
                 return 1;
             }
 
+            // The wallpaper first: it sits under everything else, and starting
+            // it before the bar keeps the first frame from showing bare black.
+            children += new Child ("centaur-bg",
+                                   { find_helper ("centaur-bg") });
             children += new Child ("centaur-settingsd",
                                    { find_helper ("centaur-settingsd") });
             children += new Child ("centaur-topbar",

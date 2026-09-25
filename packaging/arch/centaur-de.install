@@ -8,11 +8,43 @@ Centaur DE is installed.
 
   2. Log out and pick "Centaur" in your display manager.
 
-  Settings live in Base Center (centaur-base-center).
+  Lock in the topbar power menu uses swaylock with Centaur's lock screen
+  (/usr/share/centaur/themes/swaylock.conf). A ~/.config/swaylock/config of
+  your own takes precedence.
 
-  Known gap in 0.1.0: the topbar's workspace pager and focused-window
+  Right-clicking the desktop opens Centaur's menu (Terminal, Change
+  Background, Display Settings, Lock Screen, Log Out), themed like the rest
+  of the desktop. An existing ~/.config/labwc/menu.xml is saved once as
+  menu.xml.pre-centaur before Centaur's replaces it.
+
+  Screenshots: Print (whole screen), Shift+Print (area), Super+Shift+S
+  (options), or "Take Screenshot…" in the desktop menu. Saved to
+  ~/Pictures/Screenshots and copied to the clipboard.
+
+  Wallpaper: "Background" in the launcher (centaur-background). Centaur's
+  own wallpapers are in /usr/share/backgrounds/centaur; pictures you add are
+  copied to ~/.local/share/backgrounds.
+
+  Display settings: "Displays" in the launcher (centaur-displays). Kept
+  layouts are saved per user and restored at login by centaur-settingsd.
+
+  Suspend is hidden in virtual machines, which usually cannot wake from it.
+  Override with: gsettings set org.centaur.topbar suspend-button always
+
+  Settings are GSettings keys; list them with:
+       gsettings list-recursively | grep org.centaur
+
+  Centaur runs on labwc, its official compositor, installed with this
+  package together with Xwayland for X11 applications.
+
+  For the network, battery and volume indicators, the monospace font and the
+  alternative icon theme, install the optional dependencies too:
+       sudo pacman -S --needed --asdeps networkmanager upower libpulse \
+            pipewire-pulse libnotify ttf-jetbrains-mono papirus-icon-theme
+
+  Known gap in 0.1.x: the topbar's workspace pager and focused-window
   indicator need a compositor that reports them. labwc does not yet, so
-  those two indicators are absent under labwc and present under sway.
+  those two indicators are absent.
 
 MSG
 }
@@ -21,6 +53,8 @@ post_upgrade() {
   systemctl daemon-reload >/dev/null 2>&1 || true
   echo "Restart centaur-sysd to pick up this version:"
   echo "  systemctl restart centaur-sysd.service"
+  echo "Reload a running Centaur session (it respawns the topbar at once):"
+  echo "  pkill -x centaur-topbar"
 }
 
 pre_remove() {

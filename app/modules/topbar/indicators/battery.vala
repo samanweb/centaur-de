@@ -68,15 +68,11 @@ namespace Centaur.Topbar {
 
             visible = true;
 
-            var percent = (int) Math.round (device.percentage);
+            var percent = ((int) Math.round (device.percentage)).clamp (0, 100);
             var state = device.state;
 
-            var prefix = "";
-            if (state == STATE_CHARGING || state == STATE_FULLY_CHARGED) {
-                prefix = "⚡ ";   // charging
-            }
-
-            this.label = @"$prefix$percent%";
+            this.icon_name = icon_for (state, percent);
+            this.label = @"$percent%";
 
             // Colour reinforces; the number carries the message on its own.
             remove_css_class ("warning");
@@ -90,6 +86,21 @@ namespace Centaur.Topbar {
             }
 
             tooltip_text = describe (state, percent);
+        }
+
+        /**
+         * The freedesktop battery-level-N names come in steps of ten, with
+         * -charging and -charged variants.
+         */
+        private static string icon_for (uint32 state, int percent) {
+            if (state == STATE_FULLY_CHARGED) {
+                return "battery-level-100-charged-symbolic";
+            }
+            var level = percent / 10 * 10;
+            if (state == STATE_CHARGING) {
+                return @"battery-level-$level-charging-symbolic";
+            }
+            return @"battery-level-$level-symbolic";
         }
 
         private string describe (uint32 state, int percent) {

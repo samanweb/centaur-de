@@ -7,7 +7,7 @@ namespace Centaur.Settingsd {
      * applies them to things that cannot read GSettings themselves: GTK's own
      * settings files, and the compositor's configuration.
      *
-     * One writer, many reactors. Base Center never writes a compositor config
+     * One writer, many reactors. No client ever writes a compositor config
      * or a gtk settings.ini; it writes a key, and this applies it.
      */
     public class Applier : Object {
@@ -32,6 +32,42 @@ namespace Centaur.Settingsd {
                     "titlebar-buttons", "animation-duration" }) {
                 config.compositor.changed[key].connect (() => queue_compositor ());
             }
+
+            // labwc's theme follows the palette and accent, and its menus and
+            // titles the interface font.
+            foreach (var key in new string[] {
+                    "colour-mode", "accent", "font-ui", "auto-sunrise", "auto-sunset" }) {
+                config.appearance.changed[key].connect (() => {
+                    queue_compositor ();
+                    schedule_palette_switch ();
+                });
+            }
+            schedule_palette_switch ();
+        }
+
+        private uint palette_source = 0;
+
+        /**
+         * Under 'auto' the palette changes with the time of day and no key
+         * changes with it. GTK programs follow on their own (Ui.Theme keeps a
+         * timer); labwc cannot, so its theme is re-selected here at the
+         * boundary.
+         */
+        private void schedule_palette_switch () {
+            if (palette_source != 0) {
+                Source.remove (palette_source);
+                palette_source = 0;
+            }
+            if (config.appearance.get_string ("colour-mode") != "auto") {
+                return;
+            }
+            palette_source = Timeout.add_seconds (config.seconds_until_palette_change (), () => {
+                palette_source = 0;
+                write_gtk_settings ();
+                apply_compositor.begin ();
+                schedule_palette_switch ();
+                return Source.REMOVE;
+            });
         }
 
         /** Applies everything once at start-up, so a fresh account is correct. */

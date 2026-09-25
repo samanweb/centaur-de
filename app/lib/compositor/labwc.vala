@@ -4,7 +4,12 @@ namespace Centaur.Compositor {
      * labwc, the reference target.
      *
      * labwc has no IPC socket, so this backend is configuration-only: it owns
-     * ~/.config/labwc/rc.xml and asks labwc to reread it.
+     * ~/.config/labwc/rc.xml and menu.xml and asks labwc to reread them.
+     *
+     * labwc draws its own titlebars, menus and window switcher, which GTK's
+     * stylesheet never reaches. rc.xml therefore also selects the Centaur
+     * labwc theme generated from the design tokens for the current palette
+     * and accent (Centaur-<accent>-<palette>), and sets the interface font.
      *
      * KNOWN GAP -- workspaces and focus tracking report false. Reading them
      * needs the ext-workspace-v1 and wlr-foreign-toplevel-management Wayland
@@ -50,13 +55,17 @@ namespace Centaur.Compositor {
 
         public async void apply_configuration () throws GLib.Error {
             var config = Core.Config.get_default ();
-            var path = rc_path ();
 
+            yield write_owned (config_path ("rc.xml"), render (config));
+            yield write_owned (config_path ("menu.xml"), render_menu ());
+
+            reconfigure ();
+        }
+
+        private async void write_owned (string path, string contents) throws GLib.Error {
             preserve_existing (path);
 
-            var contents = render (config.compositor);
             var file = File.new_for_path (path);
-
             var parent = file.get_parent ();
             if (parent != null && !parent.query_exists ()) {
                 parent.make_directory_with_parents ();
@@ -64,8 +73,6 @@ namespace Centaur.Compositor {
 
             yield file.replace_contents_async (
                 contents.data, null, false, FileCreateFlags.NONE, null, null);
-
-            reconfigure ();
         }
 
         /**
@@ -104,16 +111,22 @@ namespace Centaur.Compositor {
             }
         }
 
-        private string render (Settings settings) {
+        private string render (Core.Config config) {
+            var settings = config.compositor;
             var placement = settings.get_string ("window-placement");
             var duration = settings.get_int ("animation-duration");
             var side = settings.get_string ("titlebar-side");
             var buttons = settings.get_strv ("titlebar-buttons");
 
+            var theme = theme_name (config);
+            string family;
+            int size;
+            parse_font (config.appearance.get_string ("font-ui"), out family, out size);
+
             var builder = new StringBuilder ();
             builder.append ("<?xml version=\"1.0\"?>\n");
             builder.append (@"<!-- $MARKER. Edits here are overwritten.\n");
-            builder.append ("     Change these settings in Base Center > Appearance. -->\n");
+            builder.append ("     Change these settings with gsettings, under org.centaur.compositor. -->\n");
             builder.append ("<labwc_config>\n");
 
             builder.append ("  <placement>\n");
@@ -121,10 +134,43 @@ namespace Centaur.Compositor {
             builder.append ("  </placement>\n");
 
             builder.append ("  <theme>\n");
+            if (theme != null) {
+                builder.append (@"    <name>$theme</name>\n");
+            }
             builder.append (@"    <titlebar>\n");
             builder.append (@"      <layout>$(labwc_titlebar (side, buttons))</layout>\n");
             builder.append ("    </titlebar>\n");
+            // radius.md, like Centaur's own windows and popovers.
+            builder.append ("    <cornerRadius>10</cornerRadius>\n");
+            builder.append ("    <dropShadows>yes</dropShadows>\n");
+            foreach (var place in new string[] {
+                    "ActiveWindow", "InactiveWindow", "MenuHeader", "MenuItem", "OnScreenDisplay" }) {
+                // Titles are semibold in Centaur's headerbars; labwc has bold.
+                var weight = place.has_suffix ("Window") ? "bold" : "normal";
+                builder.append (@"    <font place=\"$place\">\n");
+                builder.append (@"      <name>$(Markup.escape_text (family))</name>\n");
+                builder.append (@"      <size>$size</size>\n");
+                builder.append (@"      <weight>$weight</weight>\n");
+                builder.append ("    </font>\n");
+            }
             builder.append ("  </theme>\n");
+
+            // Text-only menus: labwc draws menu icons in their own colours, so
+            // the symbolic icons the rest of Centaur uses would be near-black
+            // on a dark menu.
+            builder.append ("  <menu>\n");
+            builder.append ("    <showIcons>no</showIcons>\n");
+            builder.append ("  </menu>\n");
+
+            // Screenshot keys. <default /> first: once rc.xml binds any key,
+            // labwc drops all of its built-in bindings -- Alt+Tab included --
+            // unless asked to keep them.
+            builder.append ("  <keyboard>\n");
+            builder.append ("    <default />\n");
+            append_keybind (builder, "Print", "centaur-screenshot --screen");
+            append_keybind (builder, "S-Print", "centaur-screenshot --area");
+            append_keybind (builder, "W-S-s", "centaur-screenshot");
+            builder.append ("  </keyboard>\n");
 
             // Recorded even though labwc ignores it, so the value survives a
             // move to a compositor that does animate.
@@ -132,6 +178,132 @@ namespace Centaur.Compositor {
 
             builder.append ("</labwc_config>\n");
             return builder.str;
+        }
+
+        /**
+         * The generated theme for the current palette and accent, or null when
+         * it is not installed -- labwc then keeps its built-in look rather
+         * than failing to load a theme that is not there.
+         */
+        private static string? theme_name (Core.Config config) {
+            var palette = config.resolved_palette ();
+            var accent = config.appearance.get_string ("accent");
+            foreach (var candidate in new string[] {
+                    @"Centaur-$accent-$palette", @"Centaur-emerald-$palette" }) {
+                if (find_data (Path.build_filename ("themes", candidate, "labwc", "themerc")) != null) {
+                    return candidate;
+                }
+            }
+            Core.Log.warn ("no Centaur labwc theme installed; labwc keeps its own look");
+            return null;
+        }
+
+        /** A file under the XDG data directories, user first. */
+        private static string? find_data (string relative) {
+            string[] dirs = { Environment.get_user_data_dir () };
+            foreach (var dir in Environment.get_system_data_dirs ()) {
+                dirs += dir;
+            }
+            foreach (var dir in dirs) {
+                var path = Path.build_filename (dir, relative);
+                if (FileUtils.test (path, FileTest.EXISTS)) {
+                    return path;
+                }
+            }
+            return null;
+        }
+
+        /** "Inter 10" or "Noto Sans Bold 11" -> family and point size. */
+        private static void parse_font (string description, out string family, out int size) {
+            family = "Inter";
+            size = 10;
+            var parts = description.strip ().split (" ");
+            if (parts.length == 0 || parts[0] == "") {
+                return;
+            }
+            var last = parts[parts.length - 1];
+            int parsed = 0;
+            if (parts.length > 1 && int.try_parse (last, out parsed) && parsed > 0) {
+                size = parsed;
+                parts = parts[0:parts.length - 1];
+            }
+            family = string.joinv (" ", parts);
+        }
+
+        /**
+         * The desktop's right-click menu and every window's menu.
+         *
+         * The root menu leads to the things a desktop right-click is for:
+         * a terminal, the wallpaper and the displays. Lock uses Centaur's
+         * lock screen unless the user has their own swaylock configuration,
+         * the same rule the topbar's power menu follows.
+         */
+        private static string render_menu () {
+            var terminal = Environment.find_program_in_path ("lab-sensible-terminal") != null
+                ? "lab-sensible-terminal"
+                : null;
+
+            var builder = new StringBuilder ();
+            builder.append ("<?xml version=\"1.0\"?>\n");
+            builder.append (@"<!-- $MARKER. Edits here are overwritten. -->\n");
+            builder.append ("<openbox_menu>\n");
+
+            builder.append ("  <menu id=\"root-menu\">\n");
+            if (terminal != null) {
+                append_item (builder, "Terminal", "Execute", terminal);
+                builder.append ("    <separator />\n");
+            }
+            append_item (builder, "Take Screenshot…", "Execute", "centaur-screenshot");
+            builder.append ("    <separator />\n");
+            append_item (builder, "Change Background…", "Execute", "centaur-background");
+            append_item (builder, "Display Settings…", "Execute", "centaur-displays");
+            builder.append ("    <separator />\n");
+            append_item (builder, "Lock Screen", "Execute", lock_command ());
+            append_item (builder, "Log Out", "Exit", null);
+            builder.append ("  </menu>\n");
+
+            builder.append ("  <menu id=\"client-menu\">\n");
+            append_item (builder, "Minimize", "Iconify", null);
+            append_item (builder, "Maximize", "ToggleMaximize", null);
+            append_item (builder, "Fullscreen", "ToggleFullscreen", null);
+            append_item (builder, "Always on Top", "ToggleAlwaysOnTop", null);
+            builder.append ("    <menu id=\"client-send-to-menu\" />\n");
+            builder.append ("    <separator />\n");
+            append_item (builder, "Close", "Close", null);
+            builder.append ("  </menu>\n");
+
+            builder.append ("</openbox_menu>\n");
+            return builder.str;
+        }
+
+        private static void append_keybind (StringBuilder builder, string key, string command) {
+            builder.append (@"    <keybind key=\"$key\">\n");
+            builder.append (@"      <action name=\"Execute\" command=\"$(Markup.escape_text (command))\" />\n");
+            builder.append ("    </keybind>\n");
+        }
+
+        private static void append_item (StringBuilder builder, string label,
+                                         string action, string? command) {
+            builder.append (@"    <item label=\"$(Markup.escape_text (label))\">\n");
+            if (command != null) {
+                builder.append (@"      <action name=\"$action\" command=\"$(Markup.escape_text (command))\" />\n");
+            } else {
+                builder.append (@"      <action name=\"$action\" />\n");
+            }
+            builder.append ("    </item>\n");
+        }
+
+        private static string lock_command () {
+            var home = Environment.get_home_dir ();
+            var personal = FileUtils.test (
+                    Path.build_filename (Environment.get_user_config_dir (), "swaylock", "config"),
+                    FileTest.EXISTS)
+                || FileUtils.test (Path.build_filename (home, ".swaylock", "config"), FileTest.EXISTS);
+            var ours = find_data (Path.build_filename ("centaur", "themes", "swaylock.conf"));
+            if (personal || ours == null) {
+                return "swaylock --daemonize";
+            }
+            return @"swaylock --daemonize --config $ours";
         }
 
         private static string labwc_placement (string value) {
@@ -177,9 +349,9 @@ namespace Centaur.Compositor {
             }
         }
 
-        private static string rc_path () {
+        private static string config_path (string name) {
             return Path.build_filename (
-                Environment.get_user_config_dir (), "labwc", "rc.xml");
+                Environment.get_user_config_dir (), "labwc", name);
         }
     }
 }

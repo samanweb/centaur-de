@@ -1,0 +1,15 @@
+centaur_displays = executable('centaur-displays',
+  centaur_core_sources,
+  centaur_ui_sources,
+  centaur_display_sources,
+  version_vala,
+  files(
+    'arrangement.vala',
+    'window.vala',
+    'main.vala',
+  ),
+  include_directories: centaur_display_inc,
+  dependencies: ui_deps + [wayland_client_dep, dependency('gtk4-wayland')],
+  install: true,
+  install_dir: bindir,
+)

@@ -3,9 +3,10 @@ namespace Centaur.Topbar {
     /**
      * The title of the focused window.
      *
-     * Monospaced and ellipsised at the end: a title is often a path or a
-     * command line, and it must never be allowed to push the rest of the bar
-     * around as the user switches windows.
+     * Ellipsised at the end and capped in width: a title is often a path or
+     * a command line, and it must never be allowed to push the rest of the bar
+     * around as the user switches windows. The app id is only in the tooltip;
+     * in the bar it is noise the window itself already shows.
      */
     public class FocusedWindowIndicator : TextIndicator, Indicator {
 
@@ -53,19 +54,18 @@ namespace Centaur.Topbar {
             if (toplevel == null || toplevel.title == "") {
                 label = "";
                 tooltip_text = null;
-                visible = false;
+                // Emptied, not hidden: hiding would unmap the widget, and map
+                // is what subscribes, so it would never come back.
+                add_css_class ("empty");
                 return;
             }
 
-            visible = true;
+            remove_css_class ("empty");
 
-            if (toplevel.app_id != "") {
-                label = @"$(toplevel.app_id): $(toplevel.title)";
-            } else {
-                label = toplevel.title;
-            }
-
-            tooltip_text = label;
+            label = toplevel.title;
+            tooltip_text = toplevel.app_id != ""
+                ? @"$(toplevel.title)\n$(toplevel.app_id)"
+                : toplevel.title;
         }
     }
 }

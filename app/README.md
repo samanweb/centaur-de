@@ -20,11 +20,13 @@ cd packaging/arch && makepkg -si
 sudo systemctl enable --now centaur-sysd.service
 ```
 
-Anywhere else:
+Or with the installer, which also installs every package Centaur needs --
+required and optional -- with pacman, reading the list from the PKGBUILD:
 
 ```sh
-./install.sh --check      # verify prerequisites, change nothing
-./install.sh              # build and install under /usr
+./install.sh --check        # report missing packages, change nothing
+./install.sh                # install packages, build, install under /usr
+./install.sh --no-optional  # the same without the optional packages
 sudo systemctl enable --now centaur-sysd.service
 ```
 
@@ -52,12 +54,16 @@ CENTAUR_LIBEXECDIR=$PWD/build/daemons \
 | Component | State |
 |---|---|
 | `lib/core` | Distro detection, GSettings access, D-Bus interface definitions |
-| `lib/ui` | Theme loader, Card, Row, ToggleRow, SliderRow, ComboRow, Chip, StatTile, MeterRing |
-| `lib/compositor` | Backend interface, sway (full), labwc (configuration only) |
+| `lib/ui` | Theme loader |
+| `lib/compositor` | Backend interface: labwc (official compositor, configuration), sway (alternative, full IPC) |
 | `daemons/sysd` | Host, Packages, Security; polkit-gated; pacman/apt/dnf/zypper backends |
 | `daemons/settingsd` | Applies configuration to GTK and the compositor |
-| `modules/topbar` | launcher, workspaces, focused-window, network, volume, battery, clock, power |
-| `modules/base-center` | Overview, Appearance, Security & Privacy |
+| `daemons/bg` | centaur-bg: runs and supervises swaybg for the wallpaper |
+| `modules/screenshot` | Screenshots: capture window, Print/Shift+Print, confirmation card; grim + slurp |
+| `modules/background` | Wallpaper chooser: preview, library, add/remove, position, colour |
+| `modules/displays` | Display settings: arrangement, resolution, refresh rate, scale, orientation |
+| `lib/displays`, `lib/wayland` | Display model, saved layouts, wlr-output-management client (C) |
+| `modules/topbar` | launcher, workspaces, taskbar, focused-window, network, volume, battery, clock (with calendar), power |
 | `session` | Session entry point and shell supervisor |
 
 ### What is not here
@@ -65,13 +71,10 @@ CENTAUR_LIBEXECDIR=$PWD/build/daemons \
 Phase 2 and 3 from `architecture.md` §11 are untouched: `centaur-notifyd`,
 `centaur-portald`, `centaur-bg`, and the standalone `centaur-launcher`.
 
-Five pages from the reference screenshots are **absent rather than empty** —
-Displays & Hardware, Network & Wi-Fi, Bluetooth, Sound & Audio, Power & Battery.
-A settings window that lists a page and then shows nothing is worse than one
-that is honestly smaller. Displays needs a `wlr-output-management-v1` client;
-the other four need their respective D-Bus services wired up.
+Base Center, the settings window, was removed on 2026-09-24. Settings are the
+GSettings keys under `/org/centaur/`; `centaur-settingsd` applies them.
 
-The START button opens a working application list built on `GLib.AppInfo`, which
+The launcher button opens a working application list built on `GLib.AppInfo`, which
 covers what a launcher is for. The standalone `centaur-launcher` module is still
 Phase 2.
 
@@ -86,6 +89,10 @@ functional gap in 0.1.0. Reading them needs the `ext-workspace-v1` and
 C for, and not something worth writing untested. `LabwcBackend` reports both
 capabilities as false, so the two indicators are **absent** rather than empty.
 Under sway both work today through its IPC socket.
+
+`wlr-foreign-toplevel-management-v1` has since been implemented for the
+taskbar (`modules/topbar/toplevel-tracker.c`) and works under labwc; the
+focused-window indicator does not use it yet.
 
 This is the `Capabilities` mechanism doing exactly its job, but it is still a
 gap, not a feature.
@@ -133,7 +140,7 @@ needs, with no shared header to get this wrong.
 *This is now closer to the architecture than the archive was.* Because
 `centaur-sysd` and `centaur-settingsd` never compile the `ui` sources, they link
 no GTK at all — the property `architecture.md` §2.3 asks for, which the archive
-had quietly cost. Only `centaur-topbar` and `centaur-base-center` depend on GTK.
+had quietly cost. Only `centaur-topbar` depends on GTK.
 
 *Cost:* the shared sources are compiled once per target. They are small, and a
 root process that does not link a UI toolkit is worth more than the build
@@ -170,7 +177,6 @@ Nothing here has been compiled or run. What *was* checked:
 | GSettings schema | `glib-compile-schemas --strict --dry-run` | compiles |
 | D-Bus bus policy | `xmllint --noout --nonet` | well-formed |
 | polkit policy | `xmllint --noout --nonet` | well-formed |
-| `centaur-base-center.desktop` | `desktop-file-validate` | valid |
 | `centaur.desktop` | `desktop-file-validate` | valid apart from `DesktopNames`, which the validator does not model for session files and which display managers require |
 | `PKGBUILD` | `bash -n`, `shellcheck`, `makepkg --printsrcinfo` | clean |
 | `install.sh`, `uninstall.sh` | `bash -n`, `shellcheck`, live `--check` run | clean |

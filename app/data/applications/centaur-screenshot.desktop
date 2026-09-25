@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Screenshot
+GenericName=Screenshot Tool
+Comment=Capture the screen, one display or an area; saved to Pictures and copied to the clipboard
+Exec=centaur-screenshot
+Icon=applets-screenshooter
+Terminal=false
+Categories=Utility;
+Keywords=screenshot;capture;print;screen;snip;grab;
+StartupNotify=true

@@ -20,6 +20,7 @@ centaur_core_sources = files(
   'core/distro.vala',
   'core/config.vala',
   'core/system-client.vala',
+  'core/wallpaper.vala',
 )
 
 # No GTK: the compositor adapter deals in plain structs and D-Bus/sockets.
@@ -33,9 +34,15 @@ centaur_compositor_sources = files(
 # The only source set that pulls in GTK.
 centaur_ui_sources = files(
   'ui/theme.vala',
-  'ui/card.vala',
-  'ui/rows.vala',
-  'ui/chip.vala',
-  'ui/stat-tile.vala',
-  'ui/meter-ring.vala',
 )
+
+# Display layout: the wlr-output-management client (C, no GTK) and the model
+# both centaur-displays and centaur-settingsd work from.
+centaur_display_sources = files(
+  'wayland/output-manager.c',
+  'wayland/output-manager.vapi',
+  'displays/model.vala',
+  'displays/store.vala',
+) + protocol_sources['wlr-output-management-unstable-v1']
+
+centaur_display_inc = include_directories('wayland')

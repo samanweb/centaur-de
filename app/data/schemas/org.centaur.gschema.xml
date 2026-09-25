@@ -48,6 +48,25 @@
     <key name="wallpaper" type="s">
       <default>''</default>
       <summary>Absolute path to the wallpaper image</summary>
+      <description>Empty means Centaur's default wallpaper. A path that no longer exists falls back to the default too, rather than to a blank screen.</description>
+    </key>
+    <key name="wallpaper-mode" type="s">
+      <choices>
+        <choice value="fill"/>
+        <choice value="fit"/>
+        <choice value="stretch"/>
+        <choice value="center"/>
+        <choice value="tile"/>
+        <choice value="solid"/>
+      </choices>
+      <default>'fill'</default>
+      <summary>How the wallpaper covers each display</summary>
+      <description>'fill' crops to cover the display, 'fit' shows the whole image with the background colour around it, 'stretch' distorts to fit, 'center' shows it at its own size, 'tile' repeats it, and 'solid' ignores the image and shows only the background colour.</description>
+    </key>
+    <key name="background-color" type="s">
+      <default>'#0b0f14'</default>
+      <summary>Background colour, as #rrggbb</summary>
+      <description>Shown around the wallpaper in 'fit' and 'center', and on its own in 'solid'.</description>
     </key>
     <key name="font-ui" type="s">
       <default>'Inter 10'</default>
@@ -74,7 +93,7 @@
 
   <schema id="org.centaur.topbar" path="/org/centaur/topbar/">
     <key name="layout-start" type="as">
-      <default>['launcher','workspaces']</default>
+      <default>['launcher','workspaces','taskbar']</default>
       <summary>Indicator ids in the start section, in order</summary>
     </key>
     <key name="layout-center" type="as">
@@ -88,6 +107,16 @@
     <key name="all-outputs" type="b">
       <default>true</default>
       <summary>Show a bar on every monitor rather than only the first</summary>
+    </key>
+    <key name="suspend-button" type="s">
+      <choices>
+        <choice value="auto"/>
+        <choice value="always"/>
+        <choice value="never"/>
+      </choices>
+      <default>'auto'</default>
+      <summary>Whether the power menu offers Suspend</summary>
+      <description>'auto' offers it when logind allows suspend and the session is not running in a virtual machine or container, where a guest usually cannot wake from suspend and appears to hang. 'always' and 'never' override that.</description>
     </key>
     <key name="clock-format" type="s">
       <default>'%a, %b %-d  %H:%M'</default>

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Displays
+GenericName=Display Settings
+Comment=Change resolution, refresh rate, scale, orientation and arrangement of monitors
+Exec=centaur-displays
+Icon=preferences-desktop-display
+Terminal=false
+Categories=Settings;HardwareSettings;
+Keywords=monitor;screen;resolution;refresh;scale;rotate;display;
+StartupNotify=true

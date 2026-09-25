@@ -76,11 +76,15 @@ Shared libraries
 Centaur does **not** ship a Wayland compositor. It runs on an existing
 wlroots-based compositor and configures it.
 
-- **labwc is the reference target.** It is small, mature, implements
-  `wlr-layer-shell` and `wlr-output-management`, and is configured through plain
-  files that Centaur can rewrite.
-- **sway is the second supported target.** Also wlroots, so one adapter covers
-  most of both.
+- **labwc is Centaur's official compositor** (decided 2026-09-25). It is
+  small, mature, implements every protocol Centaur relies on
+  (`wlr-layer-shell`, `wlr-foreign-toplevel-management`,
+  `wlr-output-management`, `ext-session-lock`), and is configured through plain
+  files that Centaur can rewrite. The installer and the package install it,
+  with Xwayland for X11 applications, and `centaur-session` starts it.
+- **sway still works** as an alternative (also wlroots, so one adapter covers
+  most of both), but it is not installed or set up for you: its config needs
+  the `exec` lines in `app/README.md`.
 
 The Appearance page's compositor settings — window placement, titlebar buttons,
 transition duration — are therefore a *configuration adapter*, not a window
@@ -190,7 +194,11 @@ Default layout, matching the topbar reference image:
 **Budget: under 40 MB RSS with all indicators live.** This is asserted by the
 test suite (§8), not merely intended.
 
-### 4.2 `centaur-base-center` — module 02
+### 4.2 `centaur-base-center` — module 02 (removed)
+
+> **Removed from the project on 2026-09-24.** This section is kept as the record
+> of what was designed. Settings are now changed through GSettings directly;
+> `centaur-settingsd` still applies them, and `centaur-sysd` has no client.
 
 Settings manager. Layout follows the reference screenshots: a sidebar with two
 groups, a header bar with global search, and a scrolling grid of cards.
@@ -428,8 +436,8 @@ CSS generator; `centaur-session`; `data/sessions/centaur.desktop`; the labwc
 adapter covering workspaces and focus; the CI headless harness.
 
 **Phase 1 — the modules in `module-list.md`.**
-Topbar with all indicators. Base Center with Overview, Appearance,
-Displays & Hardware, and Security & Updates. `sysd` with `Host`, `Packages` and
+Topbar with all indicators. ~~Base Center with Overview, Appearance,
+Displays & Hardware, and Security & Updates~~ (removed). `sysd` with `Host`, `Packages` and
 `Security`. `centaur-settingsd`.
 
 **Phase 2 — a complete desktop.**
@@ -458,7 +466,15 @@ Package names vary between releases; treat these as a starting point.
 | Fedora | `vala meson ninja-build gtk4-devel gtk4-layer-shell-devel wayland-devel wayland-protocols-devel polkit-devel NetworkManager-libnm-devel upower-devel wireplumber-devel` |
 | openSUSE | `vala meson ninja gtk4-devel gtk4-layer-shell-devel wayland-devel wayland-protocols-devel polkit-devel libnm-devel libupower-glib-devel wireplumber-devel` |
 
-A host compositor is also required: `labwc` (reference) or `sway`.
+**Arch Linux is the installation target.** `packaging/arch/PKGBUILD` is the one
+list of packages: `depends` (required at runtime, including `labwc` and
+Xwayland), `makedepends` (build) and `optdepends` (optional). `install.sh` reads
+those arrays and installs everything missing with
+`pacman -S --needed --noconfirm`, optional packages included, except `sway` (an
+alternative compositor) and `pipewire-pulse` where PulseAudio already runs.
+NetworkManager is enabled only when no other network service is active. On
+other distributions the table above lists build equivalents, but nothing
+installs them.
 
 ---
 
@@ -480,8 +496,9 @@ A host compositor is also required: `labwc` (reference) or `sway`.
 
 ## 14. Open questions
 
-- Whether `centaur-bg` stays a separate process or folds into `settingsd` once
-  its real size is known.
+- ~~Whether `centaur-bg` stays a separate process or folds into `settingsd`~~ —
+  settled 2026-09-24: separate and tiny. It supervises swaybg, which does the
+  drawing, so `settingsd` never owns a renderer process.
 - Whether the launcher subsumes a "run command" entry or stays application-only.
 - Which visual-diff tolerance keeps the Phase 3 baseline stable across font
   versions — to be set empirically when the baseline is locked.

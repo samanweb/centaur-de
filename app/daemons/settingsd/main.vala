@@ -1,5 +1,8 @@
 namespace Centaur.Settingsd {
 
+    // Held for the life of the process: the output manager calls back into it.
+    private static DisplayApplier? displays = null;
+
     public static int main (string[] args) {
         Environment.set_prgname ("centaur-settingsd");
 
@@ -15,6 +18,9 @@ namespace Centaur.Settingsd {
 
             var applier = new Applier (backend);
             applier.apply_all ();
+
+            displays = new DisplayApplier ();
+            displays.start ();
 
             Core.Log.info ("centaur-settingsd %s ready (compositor: %s)",
                            Version.STRING, backend.name);
